@@ -1,0 +1,153 @@
+{
+  "schedule": {
+    "preparatory": [
+      {
+        "id": 1,
+        "grade": "أولى إعدادي",
+        "gradeKey": "prep-1",
+        "sessions": [
+          {
+            "center": "سنتر ECL",
+            "hall": "قاعة اللؤلؤة",
+            "day": "السبت",
+            "time": "10:00 ص",
+            "location": ""
+          },
+          {
+            "center": "سنتر النور",
+            "hall": "قاعة 3",
+            "day": "الثلاثاء",
+            "time": "4:00 م",
+            "location": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "grade": "تانية إعدادي",
+        "gradeKey": "prep-2",
+        "sessions": [
+          {
+            "center": "سنتر ECL",
+            "hall": "قاعة اللؤلؤة",
+            "day": "السبت",
+            "time": "12:00 م",
+            "location": ""
+          },
+          {
+            "center": "سنتر الأمل",
+            "hall": "قاعة A",
+            "day": "الأربعاء",
+            "time": "5:00 م",
+            "location": ""
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "grade": "تالتة إعدادي",
+        "gradeKey": "prep-3",
+        "sessions": [
+          {
+            "center": "سنتر ECL",
+            "hall": "قاعة اللؤلؤة",
+            "day": "السبت",
+            "time": "2:00 م",
+            "location": ""
+          },
+          {
+            "center": "سنتر المستقبل",
+            "hall": "قاعة 1",
+            "day": "الخميس",
+            "time": "6:00 م",
+            "location": ""
+          }
+        ]
+      }
+    ],
+    "secondary": [
+      {
+        "id": 4,
+        "grade": "أولى ثانوي",
+        "gradeKey": "sec-1",
+        "sessions": [
+          {
+            "center": "سنتر ECL",
+            "hall": "قاعة الماسة",
+            "day": "الأحد",
+            "time": "10:00 ص",
+            "location": ""
+          },
+          {
+            "center": "سنتر العلم",
+            "hall": "قاعة B",
+            "day": "الاثنين",
+            "time": "3:00 م",
+            "location": ""
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "grade": "تانية ثانوي",
+        "gradeKey": "sec-2",
+        "sessions": [
+          {
+            "center": "سنتر ECL",
+            "hall": "قاعة الماسة",
+            "day": "الأحد",
+            "time": "12:00 م",
+            "location": ""
+          },
+          {
+            "center": "سنتر التفوق",
+            "hall": "قاعة 2",
+            "day": "الثلاثاء",
+            "time": "6:00 م",
+            "location": ""
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "grade": "تالتة ثانوي",
+        "gradeKey": "sec-3",
+        "sessions": [
+          {
+            "center": "سنتر ECL",
+            "hall": "قاعة الماسة",
+            "day": "الأحد",
+            "time": "2:00 م",
+            "location": ""
+          },
+          {
+            "center": "سنتر النجاح",
+            "hall": "قاعة VIP",
+            "day": "الجمعة",
+            "time": "4:00 م",
+            "location": ""
+          },
+          {
+            "center": "سنتر الإبداع",
+            "hall": "قاعة 5",
+            "day": "الأربعاء",
+            "time": "7:00 م",
+            "location": ""
+          }
+        ]
+      }
+    ]
+  }
+}
+          {
+            "center": "سنتر ECL",
+            "hall": "قاعة اللؤلؤة",
+            "day": "السبت",
+            "time": "12:00",
+            "location": ""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "students": [
+    {
+      "id": 1,
+      "name": "أحمد محمد إبراهيم",
+      "grade": "الصف الثالث الثانوي",
+      "score": "100%",
+      "image": "/images/students/student-1.jpg"
+    },
+    {
+      "id": 2,
+      "name": "سارة أحمد علي",
+      "grade": "الصف الثالث الثانوي",
+      "score": "99%",
+      "image": "/images/students/student-2.jpg"
+    },
+    {
+      "id": 3,
+      "name": "محمد علي حسن",
+      "grade": "الصف الثالث الإعدادي",
+      "score": "100%",
+      "image": "/images/students/student-3.jpg"
+    },
+    {
+      "id": 4,
+      "name": "فاطمة حسن محمود",
+      "grade": "الصف الثالث الإعدادي",
+      "score": "98%",
+      "image": "/images/students/student-4.jpg"
+    },
+    {
+      "id": 5,
+      "name": "يوسف إبراهيم أحمد",
+      "grade": "الصف الثاني الثانوي",
+      "score": "100%",
+      "image": "/images/students/student-5.jpg"
+    },
+    {
+      "id": 6,
+      "name": "نور الدين محمود",
+      "grade": "الصف الأول الثانوي",
+      "score": "99%",
+      "image": "/images/students/student-6.jpg"
+    },
+    {
+      "id": 7,
+      "name": "مريم عبدالله سعيد",
+      "grade": "الصف الثالث الثانوي",
+      "score": "98%",
+      "image": "/images/students/student-7.jpg"
+    },
+    {
+      "id": 8,
+      "name": "عمر خالد محمد",
+      "grade": "الصف الثاني الإعدادي",
+      "score": "100%",
+      "image": "/images/students/student-8.jpg"
+    },
+    {
+      "id": 9,
+      "name": "هدى سمير عادل",
+      "grade": "الصف الأول الإعدادي",
+      "score": "99%",
+      "image": "/images/students/student-9.jpg"
+    },
+    {
+      "id": 10,
+      "name": "كريم أشرف حسين",
+      "grade": "الصف الثالث الإعدادي",
+      "score": "100%",
+      "image": "/images/students/student-10.jpg"
+    }
+  ]
+}

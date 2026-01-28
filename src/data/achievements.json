@@ -1,0 +1,34 @@
+{
+  "achievements": [
+    {
+      "id": 1,
+      "title": "شهادة CELTA",
+      "description": "شهادة تدريس اللغة الإنجليزية للبالغين من جامعة Cambridge البريطانية",
+      "image": "/images/achievements/cert-1.jpg"
+    },
+    {
+      "id": 2,
+      "title": "شهادة IELTS",
+      "description": "شهادة اختبار اللغة الإنجليزية الدولي من British Council",
+      "image": "/images/achievements/cert-2.jpg"
+    },
+    {
+      "id": 3,
+      "title": "شهادة TOT",
+      "description": "مدرب تنمية بشرية معتمد دولياً من جامعة عين شمس",
+      "image": "/images/achievements/cert-3.jpg"
+    },
+    {
+      "id": 4,
+      "title": "شهادة التخرج",
+      "description": "بكالوريوس تربية قسم اللغة الإنجليزية",
+      "image": "/images/achievements/cert-4.jpg"
+    },
+    {
+      "id": 5,
+      "title": "شهادة تقدير",
+      "description": "تكريم على التميز في التدريس",
+      "image": "/images/achievements/cert-5.jpg"
+    }
+  ]
+}
