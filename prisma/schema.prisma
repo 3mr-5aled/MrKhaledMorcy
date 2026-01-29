@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for teacher/admin authentication
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  name       String?
+  password   String     // bcrypt hashed
+  role       Role       @default(ADMIN)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  activities Activity[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+// Grade model (e.g., "أولى إعدادي", "ثالثة ثانوي")
+model Grade {
+  id        String   @id @default(cuid())
+  name      String   // "أولى إعدادي"
+  slug      String   @unique // "prep-1", "sec-3"
+  stage     String   // "المرحلة الإعدادية" or "المرحلة الثانوية"
+  color     String?  // Hex color for UI
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  units     Unit[]
+
+  @@map("grades")
+}
+
+// Unit model (e.g., "Unit 1", "Unit 2")
+model Unit {
+  id        String   @id @default(cuid())
+  name      String   // "Unit 1"
+  slug      String   // "unit-1", "unit-2"
+  gradeId   String
+  grade     Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  lessons   Lesson[]
+
+  @@unique([gradeId, slug])
+  @@map("units")
+}
+
+// Lesson model (e.g., "Lesson 1", "Lesson 2")
+model Lesson {
+  id        String   @id @default(cuid())
+  name      String   // "Lesson 1"
+  unitId    String
+  unit      Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  answers   Answer[]
+
+  @@map("lessons")
+}
+
+// Answer model for storing lesson answers, unit exercises, exams, etc.
+model Answer {
+  id           String        @id @default(cuid())
+  title        String        // "إجابات الدرس الأول" or "تمارين على الوحدة 1 و 2"
+  description  String?       @db.Text
+  type         AnswerType    // PDF, IMAGE, YOUTUBE
+  url          String        // File path or YouTube URL (single file for PDF/YouTube)
+  images       String[]      // Array of image paths (for IMAGE type only)
+  thumbnails   String[]      @default([]) // Array of thumbnail paths (for IMAGE type only)
+  driveUrl     String?       // Google Drive file or folder URL
+  lessonId     String?
+  lesson       Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  categoryType CategoryType  // LESSON, UNIT_EXERCISE, EXAM, OTHER
+  customTitle  String?       // For OTHER category type
+  order        Int           @default(0)
+  fileSize     Int?          // In bytes, for file uploads
+  publishAt    DateTime?     // Scheduled publish date/time (stored as UTC)
+  status       PublishStatus @default(DRAFT) // DRAFT, SCHEDULED, PUBLISHED
+  isVisible    Boolean       @default(true) // Manual visibility toggle
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("answers")
+}
+
+enum AnswerType {
+  PDF
+  IMAGE
+  YOUTUBE
+  DRIVE
+}
+
+enum CategoryType {
+  LESSON
+  UNIT_EXERCISE
+  EXAM
+  OTHER
+}
+
+enum PublishStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+}
+
+// Activity tracking for dashboard
+model Activity {
+  id          String       @id @default(cuid())
+  action      ActivityType // CREATE, UPDATE, DELETE
+  entityType  String       // "grade", "unit", "lesson", "answer"
+  entityId    String?      // ID of the affected entity
+  entityName  String       // Name/title for display
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+
+  @@map("activities")
+  @@index([createdAt(sort: Desc)])
+}
+
+enum ActivityType {
+  CREATE
+  UPDATE
+  DELETE
+  SCHEDULE
+  PUBLISH
+  RESCHEDULE
+}

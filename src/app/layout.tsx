@@ -1,6 +1,5 @@
-import FloatingWhatsApp from "@/components/FloatingWhatsApp";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
+import { ConditionalLayout } from "@/components/ConditionalLayout";
+import { Providers } from "@/components/Providers";
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
@@ -43,10 +42,9 @@ export default function RootLayout({
       <body
         className={`${cairo.variable} font-cairo antialiased bg-white text-gray-900`}
       >
-        <Header />
-        <main>{children}</main>
-        <Footer />
-        <FloatingWhatsApp />
+        <Providers>
+          <ConditionalLayout>{children}</ConditionalLayout>
+        </Providers>
       </body>
     </html>
   );

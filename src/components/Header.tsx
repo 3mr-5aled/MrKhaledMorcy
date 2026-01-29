@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -16,6 +17,7 @@ const navLinks = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,6 +60,14 @@ export default function Header() {
                 {link.label}
               </a>
             ))}
+            {status === "authenticated" && (
+              <Link
+                href="/admin"
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white hover:shadow-lg`}
+              >
+                لوحة التحكم
+              </Link>
+            )}
           </div>
 
           {/* CTA Button */}
