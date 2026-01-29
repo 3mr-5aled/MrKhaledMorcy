@@ -16,12 +16,14 @@ export default async function AdminDashboard() {
     unitsCount,
     lessonsCount,
     answersCount,
+    quizzesCount,
     recentActivities,
   ] = await Promise.all([
     db.grade.count(),
     db.unit.count(),
     db.lesson.count(),
     db.answer.count(),
+    db.quiz.count(),
     getRecentActivities(10),
   ]);
 
@@ -33,7 +35,7 @@ export default async function AdminDashboard() {
       />
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <StatsCard
           title="المراحل الدراسية"
           value={gradesCount}
@@ -110,6 +112,26 @@ export default async function AdminDashboard() {
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          }
+        />
+        <StatsCard
+          title="الاختبارات"
+          value={quizzesCount}
+          color="#9B59B6"
+          icon={
+            <svg
+              className="w-7 h-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
               />
             </svg>
           }
@@ -192,6 +214,31 @@ export default async function AdminDashboard() {
             <div>
               <h3 className="font-bold text-gray-900">رفع إجابات</h3>
               <p className="text-sm text-gray-600">PDF، صور، أو فيديو</p>
+            </div>
+          </a>
+
+          <a
+            href="/admin/quizzes"
+            className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-[#9B59B6]/10 to-[#8E44AD]/10 hover:shadow-md transition-all duration-300 group"
+          >
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#9B59B6] to-[#8E44AD] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900">إضافة اختبار</h3>
+              <p className="text-sm text-gray-600">Google Forms اختبار</p>
             </div>
           </a>
         </div>

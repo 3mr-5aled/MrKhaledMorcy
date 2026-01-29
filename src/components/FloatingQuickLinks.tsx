@@ -23,6 +23,7 @@ export default function FloatingQuickLinks() {
         </svg>
       ),
       label: "الاختبارات",
+      color: "#1B9AAA",
     },
     {
       id: "pronunciation",
@@ -43,6 +44,7 @@ export default function FloatingQuickLinks() {
         </svg>
       ),
       label: "نطق الكلمات",
+      color: "#06D6A0",
     },
     {
       id: "answers",
@@ -63,6 +65,7 @@ export default function FloatingQuickLinks() {
         </svg>
       ),
       label: "اجابات الكتب",
+      color: "#EF476F",
     },
   ];
 
@@ -81,7 +84,10 @@ export default function FloatingQuickLinks() {
             <div key={link.id} className="group relative">
               <Link
                 href={link.href}
-                className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#1B9AAA] to-[#06D6A0] text-white hover:shadow-lg hover:scale-110 transition-all duration-300"
+                className="w-12 h-12 flex items-center justify-center rounded-xl text-white hover:shadow-lg hover:scale-110 transition-all duration-300"
+                style={{
+                  background: `linear-gradient(to bottom right, ${link.color}, ${link.color}dd)`,
+                }}
                 aria-label={link.label}
               >
                 {link.icon}

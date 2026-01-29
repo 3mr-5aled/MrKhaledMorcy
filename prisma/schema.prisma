@@ -73,6 +73,7 @@ model Lesson {
   updatedAt DateTime @updatedAt
   
   answers   Answer[]
+  quizzes   Quiz[]
 
   @@map("lessons")
 }
@@ -120,6 +121,27 @@ enum PublishStatus {
   DRAFT
   SCHEDULED
   PUBLISHED
+}
+
+// Quiz model for storing quizzes (Google Forms embeds)
+model Quiz {
+  id              String        @id @default(cuid())
+  title           String        // "اختبار الدرس الأول" or "اختبار على الوحدة 1"
+  description     String?       @db.Text
+  googleFormUrl   String        // Google Forms embed URL
+  lessonId        String?
+  lesson          Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  categoryType    CategoryType  // LESSON, UNIT_EXERCISE, EXAM, OTHER
+  customTitle     String?       // For OTHER category type
+  order           Int           @default(0)
+  duration        Int?          // Estimated duration in minutes (for display)
+  publishAt       DateTime?     // Scheduled publish date/time (stored as UTC)
+  status          PublishStatus @default(DRAFT) // DRAFT, SCHEDULED, PUBLISHED
+  isVisible       Boolean       @default(true) // Manual visibility toggle
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("quizzes")
 }
 
 // Activity tracking for dashboard
