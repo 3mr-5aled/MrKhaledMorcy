@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-export default function QuizzesPage() {
+function QuizzesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [grades, setGrades] = useState<any[]>([]);
@@ -356,5 +356,19 @@ export default function QuizzesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QuizzesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <QuizzesContent />
+    </Suspense>
   );
 }

@@ -817,7 +817,7 @@ export default function AdminQuizzesPage() {
                     </label>
                     <DatePicker
                       selected={formData.publishAt}
-                      onChange={(date) =>
+                      onChange={(date: Date | null) =>
                         setFormData({ ...formData, publishAt: date })
                       }
                       showTimeSelect

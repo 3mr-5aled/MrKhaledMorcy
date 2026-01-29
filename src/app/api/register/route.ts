@@ -4,6 +4,15 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
+    // SECURITY: Disable public registration in production
+    // Only allow registration if ALLOW_REGISTRATION env var is explicitly set to "true"
+    if (process.env.ALLOW_REGISTRATION !== "true") {
+      return NextResponse.json(
+        { error: "Registration is disabled" },
+        { status: 403 },
+      );
+    }
+
     const { email, password, name } = await request.json();
 
     if (!email || !password) {
@@ -54,4 +63,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

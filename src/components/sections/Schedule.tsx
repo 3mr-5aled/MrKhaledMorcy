@@ -20,8 +20,8 @@ type Grade = {
 
 export default function Schedule() {
   const allGrades: Grade[] = [
-    ...scheduleData.schedule.preparatory,
-    ...scheduleData.schedule.secondary,
+    ...(scheduleData as any).schedule.preparatory,
+    ...(scheduleData as any).schedule.secondary,
   ];
 
   const [activeTab, setActiveTab] = useState(allGrades[0].gradeKey);
@@ -52,19 +52,21 @@ export default function Schedule() {
               المرحلة الإعدادية
             </h3>
             <div className="flex flex-wrap gap-2">
-              {scheduleData.schedule.preparatory.map((grade) => (
-                <button
-                  key={grade.gradeKey}
-                  onClick={() => setActiveTab(grade.gradeKey)}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                    activeTab === grade.gradeKey
-                      ? "tab-active shadow-lg shadow-[#1B9AAA]/30"
-                      : "tab-inactive"
-                  }`}
-                >
-                  {grade.grade}
-                </button>
-              ))}
+              {(scheduleData as any).schedule.preparatory.map(
+                (grade: Grade) => (
+                  <button
+                    key={grade.gradeKey}
+                    onClick={() => setActiveTab(grade.gradeKey)}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      activeTab === grade.gradeKey
+                        ? "tab-active shadow-lg shadow-[#1B9AAA]/30"
+                        : "tab-inactive"
+                    }`}
+                  >
+                    {grade.grade}
+                  </button>
+                ),
+              )}
             </div>
           </div>
 
@@ -74,7 +76,7 @@ export default function Schedule() {
               المرحلة الثانوية
             </h3>
             <div className="flex flex-wrap gap-2">
-              {scheduleData.schedule.secondary.map((grade) => (
+              {(scheduleData as any).schedule.secondary.map((grade: Grade) => (
                 <button
                   key={grade.gradeKey}
                   onClick={() => setActiveTab(grade.gradeKey)}

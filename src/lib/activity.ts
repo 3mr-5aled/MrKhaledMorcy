@@ -7,7 +7,7 @@ export type ActivityAction =
   | "SCHEDULE"
   | "PUBLISH"
   | "RESCHEDULE";
-export type EntityType = "grade" | "unit" | "lesson" | "answer";
+export type EntityType = "grade" | "unit" | "lesson" | "answer" | "quiz";
 
 interface LogActivityParams {
   action: ActivityAction;
@@ -66,17 +66,21 @@ export function getActivityMessage(
   entityType: EntityType,
   entityName: string,
 ): string {
-  const entityTypeArabic = {
+  const entityTypeArabic: Record<EntityType, string> = {
     grade: "المرحلة",
     unit: "الوحدة",
     lesson: "الدرس",
     answer: "الإجابة",
+    quiz: "الاختبار",
   };
 
-  const actionArabic = {
+  const actionArabic: Record<ActivityAction, string> = {
     CREATE: "أضاف",
     UPDATE: "حدّث",
     DELETE: "حذف",
+    SCHEDULE: "جدول",
+    PUBLISH: "نشر",
+    RESCHEDULE: "أعاد جدولة",
   };
 
   return `${actionArabic[action]} ${entityTypeArabic[entityType]} "${entityName}"`;

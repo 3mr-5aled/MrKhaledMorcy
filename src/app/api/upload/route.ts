@@ -1,3 +1,4 @@
+import { authOptions } from "@/lib/auth";
 import {
   ALLOWED_FILE_TYPES,
   FILE_SIZE_LIMITS,
@@ -13,11 +14,18 @@ import {
 } from "@/lib/imageOptimization";
 import { existsSync } from "fs";
 import { mkdir, rmdir, unlink, writeFile } from "fs/promises";
+import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import path from "path";
 
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require authentication for file uploads
+    const session = (await getServerSession(authOptions)) as any;
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const gradeId = formData.get("gradeId") as string;
@@ -144,11 +152,30 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    // SECURITY: Require authentication for file deletion
+    const session = (await getServerSession(authOptions)) as any;
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const filePath = searchParams.get("path");
 
     if (!filePath) {
       return NextResponse.json({ error: "مسار الملف مطلوب" }, { status: 400 });
+    }
+
+    // SECURITY: Validate path to prevent path traversal attacks
+    const normalizedPath = path.normalize(filePath);
+    if (
+      normalizedPath.includes("..") ||
+      !normalizedPath.startsWith("/answers/") ||
+      path.isAbsolute(normalizedPath.substring(1))
+    ) {
+      return NextResponse.json(
+        { error: "مسار الملف غير صالح" },
+        { status: 400 },
+      );
     }
 
     // Convert web path to file system path
@@ -207,4 +234,3 @@ export async function DELETE(request: Request) {
     );
   }
 }
-

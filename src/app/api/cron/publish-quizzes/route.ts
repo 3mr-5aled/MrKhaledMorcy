@@ -15,7 +15,16 @@ export async function GET(request: Request) {
   try {
     // Verify authorization - cron job should include a secret API key
     const authHeader = request.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET || process.env.NEXTAUTH_SECRET;
+    const cronSecret = process.env.CRON_SECRET;
+
+    // SECURITY: CRON_SECRET must be explicitly set in production
+    if (!cronSecret) {
+      console.error("[CRON] CRON_SECRET environment variable is not set");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 },
+      );
+    }
 
     if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json(
