@@ -89,7 +89,7 @@ function LoginContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none transition-all"
-                placeholder="admin@mrkhaledmorcy.com"
+                placeholder="example@gmail.com"
                 required
                 disabled={isLoading}
               />
