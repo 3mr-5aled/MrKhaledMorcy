@@ -1,5 +1,6 @@
 "use client";
 
+import FloatingQuickLinks from "@/components/FloatingQuickLinks";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -16,6 +17,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
       <main>{children}</main>
       {!isAdminPage && <Footer />}
       {!isAdminPage && <FloatingWhatsApp />}
+      {!isAdminPage && <FloatingQuickLinks />}
     </>
   );
 }
