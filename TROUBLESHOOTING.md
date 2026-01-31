@@ -6,6 +6,43 @@
 
 Getting `POST /api/students/upload 500 (Internal Server Error)` when trying to upload student images.
 
+**Latest Error Details:**
+
+- Request ID: `01KGAZN5D0Y3VJ6CV9HE0529Q0`
+- Date: January 31, 2026, 11:34:29 PM
+- Duration: 1115ms (function executed but failed)
+- Status: 500 Internal Server Error
+- Client: Egypt, Cairo
+
+### 🔍 IMMEDIATE ACTION REQUIRED
+
+#### Step 1: Check Netlify Function Logs (DO THIS FIRST!)
+
+**How to access logs:**
+
+1. Go to [Netlify Dashboard](https://app.netlify.com)
+2. Select your site: `mrkhaledmorcy`
+3. Click **"Logs"** tab in top menu
+4. Select **"Functions"** from dropdown
+5. Look for timestamp: `11:34:29 PM` on `January 31, 2026`
+6. Find request ID: `01KGAZN5D0Y3VJ6CV9HE0529Q0`
+
+**What to look for in logs:**
+
+- `"Initializing Supabase client..."` - Shows env vars status
+- `"Starting Supabase upload process..."` - Upload started
+- `"=== Supabase upload error ==="` - Specific Supabase error
+- `"=== Error uploading student image ==="` - General error
+- Any red error messages
+
+**Alternative - Real-time logs:**
+
+```bash
+netlify logs:function api-students-upload --live
+```
+
+Then try uploading and watch the error appear.
+
 ### Steps to Diagnose
 
 1. **Check Netlify Function Logs**

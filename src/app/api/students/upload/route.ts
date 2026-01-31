@@ -21,8 +21,20 @@ import sharp from "sharp";
 
 export async function POST(request: Request) {
   try {
-    // Check if running on Netlify (serverless environment)
-    const isNetlify = process.env.NETLIFY === "true";
+    // Check if running in production/serverless (use Supabase) vs local development
+    // FIX: Use NODE_ENV instead of just NETLIFY env var (which isn't always set)
+    // This prevents "EROFS: read-only file system" errors in serverless environments
+    const isProduction =
+      process.env.NODE_ENV === "production" ||
+      process.env.NETLIFY === "true" ||
+      process.env.VERCEL === "1" ||
+      !!process.env.AWS_LAMBDA_FUNCTION_NAME; // Generic serverless check
+
+    console.log("Environment detection:", {
+      NODE_ENV: process.env.NODE_ENV,
+      NETLIFY: process.env.NETLIFY,
+      isProduction,
+    });
 
     // SECURITY: Require authentication for file uploads
     const session = (await getServerSession(authOptions)) as any;
@@ -71,7 +83,7 @@ export async function POST(request: Request) {
     );
     const baseName = `${timestamp}-${sanitizedName}`;
 
-    if (isNetlify) {
+    if (isProduction) {
       // === PRODUCTION: Use Supabase Storage ===
       try {
         console.log("Starting Supabase upload process...");
@@ -270,8 +282,12 @@ export async function POST(request: Request) {
 
     // Log environment for debugging
     console.error("Environment:", {
-      isNetlify: process.env.NETLIFY === "true",
+      isProduction:
+        process.env.NODE_ENV === "production" ||
+        process.env.NETLIFY === "true" ||
+        !!process.env.AWS_LAMBDA_FUNCTION_NAME,
       nodeEnv: process.env.NODE_ENV,
+      netlifyEnv: process.env.NETLIFY,
       hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     });
