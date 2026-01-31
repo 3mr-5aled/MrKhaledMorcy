@@ -74,46 +74,74 @@ export async function POST(request: Request) {
     if (isNetlify) {
       // === PRODUCTION: Use Supabase Storage ===
       try {
+        console.log("Starting Supabase upload process...");
+        console.log("Environment check:", {
+          hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+          hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+          hasPublishableKey:
+            !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
+        });
+
         const supabase = getSupabaseClient();
         const storagePath = studentId
           ? `students/${studentId}`
           : "students/temp";
 
+        console.log(`Using storage path: ${storagePath}`);
+
         // Optimize image using Sharp in memory
+        console.log("Optimizing image with Sharp...");
         const optimizedBuffer = await sharp(buffer)
           .webp({ quality: 85 })
           .toBuffer();
 
+        console.log("Creating thumbnail...");
         const thumbnailBuffer = await sharp(buffer)
           .resize(200, 200, { fit: "cover" })
           .webp({ quality: 80 })
           .toBuffer();
 
+        console.log(
+          `Optimized sizes - Original: ${buffer.length}, Optimized: ${optimizedBuffer.length}, Thumbnail: ${thumbnailBuffer.length}`,
+        );
+
         // Upload optimized image to Supabase
         const optimizedFileName = `${baseName}.webp`;
-        const { error: optimizedError } = await supabase.storage
-          .from("uploads")
-          .upload(`${storagePath}/${optimizedFileName}`, optimizedBuffer, {
-            contentType: "image/webp",
-            upsert: false,
-          });
+        console.log(
+          `Uploading optimized image: ${storagePath}/${optimizedFileName}`,
+        );
+
+        const { data: optimizedData, error: optimizedError } =
+          await supabase.storage
+            .from("uploads")
+            .upload(`${storagePath}/${optimizedFileName}`, optimizedBuffer, {
+              contentType: "image/webp",
+              upsert: false,
+            });
 
         if (optimizedError) {
+          console.error("Supabase optimized upload error:", optimizedError);
           throw new Error(
             `Failed to upload optimized image: ${optimizedError.message}`,
           );
         }
 
+        console.log("Optimized image uploaded successfully:", optimizedData);
+
         // Upload thumbnail to Supabase
         const thumbnailFileName = `${baseName}-thumb.webp`;
-        const { error: thumbnailError } = await supabase.storage
-          .from("uploads")
-          .upload(`${storagePath}/${thumbnailFileName}`, thumbnailBuffer, {
-            contentType: "image/webp",
-            upsert: false,
-          });
+        console.log(`Uploading thumbnail: ${storagePath}/${thumbnailFileName}`);
+
+        const { data: thumbnailData, error: thumbnailError } =
+          await supabase.storage
+            .from("uploads")
+            .upload(`${storagePath}/${thumbnailFileName}`, thumbnailBuffer, {
+              contentType: "image/webp",
+              upsert: false,
+            });
 
         if (thumbnailError) {
+          console.error("Supabase thumbnail upload error:", thumbnailError);
           // Clean up optimized image if thumbnail fails
           await supabase.storage
             .from("uploads")
@@ -122,6 +150,8 @@ export async function POST(request: Request) {
             `Failed to upload thumbnail: ${thumbnailError.message}`,
           );
         }
+
+        console.log("Thumbnail uploaded successfully:", thumbnailData);
 
         // Get public URLs
         const optimizedUrl = getSupabasePublicUrl(
@@ -139,7 +169,7 @@ export async function POST(request: Request) {
         );
 
         console.log(
-          `Student image uploaded to Supabase: ${file.name} - Size reduced by ${reduction}% (${buffer.length} → ${optimizedBuffer.length} bytes)`,
+          `Student image uploaded to Supabase successfully: ${file.name} - Size reduced by ${reduction}% (${buffer.length} → ${optimizedBuffer.length} bytes)`,
         );
 
         return NextResponse.json({
@@ -152,8 +182,29 @@ export async function POST(request: Request) {
           type: "webp",
         });
       } catch (supabaseError) {
-        console.error("Supabase upload error:", supabaseError);
-        throw supabaseError;
+        console.error("=== Supabase upload error ===");
+        console.error("Error:", supabaseError);
+        console.error(
+          "Error message:",
+          supabaseError instanceof Error ? supabaseError.message : "Unknown",
+        );
+        console.error(
+          "Error stack:",
+          supabaseError instanceof Error ? supabaseError.stack : "No stack",
+        );
+
+        // Return more detailed error in production for debugging
+        return NextResponse.json(
+          {
+            error: "حدث خطأ أثناء رفع الصورة إلى التخزين السحابي",
+            details:
+              supabaseError instanceof Error
+                ? supabaseError.message
+                : "Unknown error",
+            hint: "تحقق من إعدادات Supabase Storage والصلاحيات",
+          },
+          { status: 500 },
+        );
       }
     } else {
       // === DEVELOPMENT: Use local filesystem ===
@@ -210,17 +261,29 @@ export async function POST(request: Request) {
       }
     }
   } catch (error) {
-    console.error("Error uploading student image:", error);
+    console.error("=== Error uploading student image ===");
+    console.error("Error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     console.error("Error details:", errorMessage);
     console.error("Stack:", error instanceof Error ? error.stack : "No stack");
 
+    // Log environment for debugging
+    console.error("Environment:", {
+      isNetlify: process.env.NETLIFY === "true",
+      nodeEnv: process.env.NODE_ENV,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
+
     return NextResponse.json(
       {
         error: "حدث خطأ أثناء رفع صورة الطالب",
-        details:
-          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        details: errorMessage, // Always show details for debugging
+        stack:
+          process.env.NODE_ENV === "development" && error instanceof Error
+            ? error.stack
+            : undefined,
       },
       { status: 500 },
     );

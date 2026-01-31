@@ -7,6 +7,15 @@ export const getSupabaseClient = () => {
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
+  console.log("Initializing Supabase client...", {
+    url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : "MISSING",
+    keyType: process.env.SUPABASE_SERVICE_ROLE_KEY
+      ? "SERVICE_ROLE"
+      : process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+        ? "PUBLISHABLE"
+        : "MISSING",
+  });
+
   if (!supabaseUrl) {
     console.error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable");
     throw new Error("Missing Supabase URL configuration");
