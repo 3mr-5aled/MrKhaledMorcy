@@ -9,10 +9,10 @@
   package = "@netlify/plugin-nextjs"
 
 [functions]
-  # Exclude large files from function bundle
-  included_files = []
+  # Include necessary files for Prisma
+  included_files = ["prisma/schema.prisma", ".env", ".env.production"]
   # Use external node modules to reduce bundle size
-  external_node_modules = ["prisma", "@prisma/client", "sharp"]
+  external_node_modules = ["@prisma/client", "sharp", "bcrypt"]
   node_bundler = "esbuild"
 
 # Scheduled function to auto-publish answers
