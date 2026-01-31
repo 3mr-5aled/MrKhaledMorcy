@@ -1,9 +1,11 @@
 # Supabase Storage Setup for File Uploads
 
 ## Problem
+
 Netlify serverless functions have a read-only file system (except for `/tmp`), so we can't save uploaded files to the local `public/` directory in production.
 
 ## Solution
+
 Use **Supabase Storage** for file uploads in production, while keeping local filesystem uploads for development.
 
 ## Setup Steps
@@ -50,12 +52,14 @@ USING (bucket_id = 'uploads');
 ### 4. Add Environment Variables
 
 Add to your `.env.local` (local development):
+
 ```env
 # Supabase Storage (for file uploads in production)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ```
 
 Add to **Netlify Environment Variables**:
+
 ```
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ```
@@ -63,6 +67,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ### 5. File Structure in Supabase Storage
 
 Files will be organized as:
+
 ```
 uploads/
 ├── students/
@@ -86,6 +91,7 @@ The upload endpoints now check if running on Netlify:
 - **Production** (Netlify): Uses Supabase Storage
 
 Files are:
+
 1. Validated for type and size
 2. Optimized using Sharp (converted to WebP for images)
 3. Uploaded to Supabase Storage bucket
@@ -106,11 +112,13 @@ Netlify will automatically deploy with the new storage integration.
 ## URLs
 
 After upload, files are accessible at:
+
 ```
 https://cgmludylubixdwgfujqe.supabase.co/storage/v1/object/public/uploads/{path}
 ```
 
 Example:
+
 ```
 https://cgmludylubixdwgfujqe.supabase.co/storage/v1/object/public/uploads/students/cml27cgva0000pryk1mmk0tf3/1738362000000-edited-image.webp
 ```
@@ -125,6 +133,7 @@ https://cgmludylubixdwgfujqe.supabase.co/storage/v1/object/public/uploads/studen
 ## Cost
 
 Supabase free tier includes:
+
 - 1 GB storage
 - 2 GB bandwidth per month
 
