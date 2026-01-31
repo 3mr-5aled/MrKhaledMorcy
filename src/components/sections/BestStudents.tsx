@@ -35,6 +35,7 @@ export default function BestStudents() {
   const [grades, setGrades] = useState<Grade[]>([]);
   const [selectedGradeId, setSelectedGradeId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [studentsLoading, setStudentsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const studentsPerPage = 10;
 
@@ -45,6 +46,7 @@ export default function BestStudents() {
         const gradesResponse = await fetch("/api/grades");
         if (gradesResponse.ok) {
           const gradesData = await gradesResponse.json();
+          console.log("[BestStudents] Fetched grades:", gradesData);
           // Sort grades by order
           const sortedGrades = gradesData.sort(
             (a: Grade, b: Grade) => a.order - b.order,
@@ -54,9 +56,14 @@ export default function BestStudents() {
           if (sortedGrades.length > 0) {
             setSelectedGradeId(sortedGrades[0].id);
           }
+        } else {
+          console.error(
+            "[BestStudents] Failed to fetch grades:",
+            gradesResponse.status,
+          );
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("[BestStudents] Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -69,17 +76,28 @@ export default function BestStudents() {
     if (!selectedGradeId) return;
 
     const fetchStudents = async () => {
+      setStudentsLoading(true);
       try {
-        const response = await fetch(
-          `/api/students?visibleOnly=true&gradeId=${selectedGradeId}`,
-        );
+        const url = `/api/students?visibleOnly=true&gradeId=${selectedGradeId}`;
+        console.log("[BestStudents] Fetching students from:", url);
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
+          console.log(
+            `[BestStudents] Fetched ${data.length} students for grade ${selectedGradeId}`,
+          );
           setStudents(data);
           setCurrentPage(1); // Reset to first page when grade changes
+        } else {
+          console.error(
+            "[BestStudents] Failed to fetch students:",
+            response.status,
+          );
         }
       } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error("[BestStudents] Error fetching students:", error);
+      } finally {
+        setStudentsLoading(false);
       }
     };
 
@@ -107,8 +125,9 @@ export default function BestStudents() {
     return (
       <section id="best-students" className="section-padding bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-gray-600">جاري التحميل...</p>
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B9AAA] mb-4"></div>
+            <p className="text-gray-600">جاري تحميل لوحة الشرف...</p>
           </div>
         </div>
       </section>
@@ -145,7 +164,8 @@ export default function BestStudents() {
                 <button
                   key={grade.id}
                   onClick={() => setSelectedGradeId(grade.id)}
-                  className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 ${
+                  disabled={studentsLoading}
+                  className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                     selectedGradeId === grade.id
                       ? "bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white shadow-lg scale-105"
                       : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
@@ -166,7 +186,12 @@ export default function BestStudents() {
         )}
 
         {/* Students Grid or Empty Message */}
-        {students.length === 0 ? (
+        {studentsLoading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B9AAA] mb-4"></div>
+            <p className="text-gray-600">جاري تحميل الطلاب...</p>
+          </div>
+        ) : students.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
               لا يوجد طلاب في هذا الصف حالياً
