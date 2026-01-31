@@ -1,8 +1,54 @@
-import studentsData from "@/data/students.json";
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
+
+type Student = {
+  id: string;
+  name: string;
+  grade: string;
+  score: string;
+  image: string;
+  isVisible: boolean;
+};
 
 export default function BestStudents() {
-  const students = studentsData.students;
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch("/api/students?visibleOnly=true");
+        if (response.ok) {
+          const data = await response.json();
+          setStudents(data);
+        }
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="best-students" className="section-padding bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-600">جاري التحميل...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (students.length === 0) {
+    return null; // Don't show section if no students
+  }
 
   return (
     <section id="best-students" className="section-padding bg-gray-50">

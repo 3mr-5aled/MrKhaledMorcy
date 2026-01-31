@@ -167,3 +167,19 @@ enum ActivityType {
   PUBLISH
   RESCHEDULE
 }
+
+// Student model for "لوحة الشرف" (Best Students)
+model Student {
+  id          String   @id @default(cuid())
+  name        String   // Student's full name in Arabic
+  grade       String   // e.g., "الصف الثالث الثانوي"
+  score       String   // e.g., "100%", "99%"
+  image       String   // Path to student's image
+  manualOrder Int?     // Manual ordering for students with same score (null = auto-sort by score)
+  isVisible   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("students")
+  @@index([manualOrder])
+}
