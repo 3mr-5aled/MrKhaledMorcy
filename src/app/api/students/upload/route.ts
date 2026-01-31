@@ -12,13 +12,19 @@ import {
   getWebPath,
   optimizeImage,
 } from "@/lib/imageOptimization";
+import { getSupabaseClient, getSupabasePublicUrl } from "@/lib/supabase";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import path from "path";
+import { tmpdir } from "os";
+import sharp from "sharp";
 
 export async function POST(request: Request) {
   try {
+    // Check if running on Netlify (serverless environment)
+    const isNetlify = process.env.NETLIFY === "true";
+    
     // SECURITY: Require authentication for file uploads
     const session = (await getServerSession(authOptions)) as any;
     if (!session?.user?.id) {
@@ -59,67 +65,147 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create directory structure for student images
-    const uploadDir = path.join(
-      process.cwd(),
-      "public",
-      "images",
-      "students",
-      studentId || "temp",
-    );
-    await mkdir(uploadDir, { recursive: true });
-
     // Generate unique filename
     const timestamp = Date.now();
     const sanitizedName = sanitizeFilename(
       file.name.replace(`.${fileExt}`, ""),
     );
-    const filename = `${timestamp}-${sanitizedName}.${fileExt}`;
-    const filePath = path.join(uploadDir, filename);
+    const baseName = `${timestamp}-${sanitizedName}`;
 
-    // Write file
-    await writeFile(filePath, buffer);
+    if (isNetlify) {
+      // === PRODUCTION: Use Supabase Storage ===
+      try {
+        const supabase = getSupabaseClient();
+        const storagePath = studentId ? `students/${studentId}` : "students/temp";
 
-    // Optimize and generate thumbnails
-    try {
-      const optimizationResult = await optimizeImage(
-        filePath,
-        uploadDir,
-        `${timestamp}-${sanitizedName}`,
+        // Optimize image using Sharp in memory
+        const optimizedBuffer = await sharp(buffer)
+          .webp({ quality: 85 })
+          .toBuffer();
+
+        const thumbnailBuffer = await sharp(buffer)
+          .resize(200, 200, { fit: "cover" })
+          .webp({ quality: 80 })
+          .toBuffer();
+
+        // Upload optimized image to Supabase
+        const optimizedFileName = `${baseName}.webp`;
+        const { error: optimizedError } = await supabase.storage
+          .from("uploads")
+          .upload(`${storagePath}/${optimizedFileName}`, optimizedBuffer, {
+            contentType: "image/webp",
+            upsert: false,
+          });
+
+        if (optimizedError) {
+          throw new Error(`Failed to upload optimized image: ${optimizedError.message}`);
+        }
+
+        // Upload thumbnail to Supabase
+        const thumbnailFileName = `${baseName}-thumb.webp`;
+        const { error: thumbnailError } = await supabase.storage
+          .from("uploads")
+          .upload(`${storagePath}/${thumbnailFileName}`, thumbnailBuffer, {
+            contentType: "image/webp",
+            upsert: false,
+          });
+
+        if (thumbnailError) {
+          // Clean up optimized image if thumbnail fails
+          await supabase.storage
+            .from("uploads")
+            .remove([`${storagePath}/${optimizedFileName}`]);
+          throw new Error(`Failed to upload thumbnail: ${thumbnailError.message}`);
+        }
+
+        // Get public URLs
+        const optimizedUrl = getSupabasePublicUrl("uploads", `${storagePath}/${optimizedFileName}`);
+        const thumbnailUrl = getSupabasePublicUrl("uploads", `${storagePath}/${thumbnailFileName}`);
+
+        const reduction = calculateSizeReduction(buffer.length, optimizedBuffer.length);
+
+        console.log(
+          `Student image uploaded to Supabase: ${file.name} - Size reduced by ${reduction}% (${buffer.length} → ${optimizedBuffer.length} bytes)`,
+        );
+
+        return NextResponse.json({
+          path: optimizedUrl,
+          thumbnail: thumbnailUrl,
+          size: optimizedBuffer.length,
+          originalSize: buffer.length,
+          thumbnailSize: thumbnailBuffer.length,
+          reduction: reduction,
+          type: "webp",
+        });
+      } catch (supabaseError) {
+        console.error("Supabase upload error:", supabaseError);
+        throw supabaseError;
+      }
+    } else {
+      // === DEVELOPMENT: Use local filesystem ===
+      const uploadDir = path.join(
+        process.cwd(),
+        "public",
+        "images",
+        "students",
+        studentId || "temp",
       );
+      await mkdir(uploadDir, { recursive: true });
 
-      // Convert to web paths
-      const optimizedWebPath = getWebPath(optimizationResult.optimizedPath);
-      const thumbnailWebPath = getWebPath(optimizationResult.thumbnailPath);
+      const filename = `${baseName}.${fileExt}`;
+      const filePath = path.join(uploadDir, filename);
 
-      const reduction = calculateSizeReduction(
-        optimizationResult.originalSize,
-        optimizationResult.optimizedSize,
-      );
+      // Write file
+      await writeFile(filePath, buffer);
 
-      console.log(
-        `Student image optimized: ${file.name} - Size reduced by ${reduction}% (${optimizationResult.originalSize} → ${optimizationResult.optimizedSize} bytes)`,
-      );
+      // Optimize and generate thumbnails
+      try {
+        const optimizationResult = await optimizeImage(
+          filePath,
+          uploadDir,
+          baseName,
+        );
 
-      return NextResponse.json({
-        path: optimizedWebPath,
-        thumbnail: thumbnailWebPath,
-        size: optimizationResult.optimizedSize,
-        originalSize: optimizationResult.originalSize,
-        thumbnailSize: optimizationResult.thumbnailSize,
-        reduction: reduction,
-        type: "webp",
-      });
-    } catch (optimizationError) {
-      console.error("Error optimizing image:", optimizationError);
-      // Delete the temporary original file
-      await unlink(filePath);
-      throw optimizationError;
+        // Convert to web paths
+        const optimizedWebPath = getWebPath(optimizationResult.optimizedPath);
+        const thumbnailWebPath = getWebPath(optimizationResult.thumbnailPath);
+
+        const reduction = calculateSizeReduction(
+          optimizationResult.originalSize,
+          optimizationResult.optimizedSize,
+        );
+
+        console.log(
+          `Student image optimized: ${file.name} - Size reduced by ${reduction}% (${optimizationResult.originalSize} → ${optimizationResult.optimizedSize} bytes)`,
+        );
+
+        return NextResponse.json({
+          path: optimizedWebPath,
+          thumbnail: thumbnailWebPath,
+          size: optimizationResult.optimizedSize,
+          originalSize: optimizationResult.originalSize,
+          thumbnailSize: optimizationResult.thumbnailSize,
+          reduction: reduction,
+          type: "webp",
+        });
+      } catch (optimizationError) {
+        console.error("Error optimizing image:", optimizationError);
+        // Delete the temporary original file
+        await unlink(filePath);
+        throw optimizationError;
+      }
     }
   } catch (error) {
     console.error("Error uploading student image:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error details:", errorMessage);
+    console.error("Stack:", error instanceof Error ? error.stack : "No stack");
+    
     return NextResponse.json(
-      { error: "حدث خطأ أثناء رفع صورة الطالب" },
+      { 
+        error: "حدث خطأ أثناء رفع صورة الطالب",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined
+      },
       { status: 500 },
     );
   }
