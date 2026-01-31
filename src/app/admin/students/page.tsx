@@ -3,97 +3,74 @@
 import ImageEditor from "@/components/admin/ImageEditor";
 import PageHeader from "@/components/admin/PageHeader";
 import showToast from "@/lib/toast";
-import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useState } from "react";
 
 type Student = {
   id: string;
   name: string;
-  grade: string;
-  score: string;
-  image: string;
-  manualOrder: number | null;
+  gradeId: string;
+  studentGrade: number;
+  testGrade: number;
+  position: "FIRST" | "SECOND" | "THIRD" | "NONE";
+  image: string | null;
   isVisible: boolean;
   createdAt: string;
   updatedAt: string;
+  grade: {
+    id: string;
+    name: string;
+    slug: string;
+    stage: string;
+    color: string | null;
+  };
 };
 
-function SortableStudentItem({
+type Grade = {
+  id: string;
+  name: string;
+  slug: string;
+  stage: string;
+  color: string | null;
+  order: number;
+};
+
+function StudentItem({
   student,
   isSelected,
   onSelect,
   onEdit,
   onDelete,
-  rank,
 }: {
   student: Student;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onEdit: (student: Student) => void;
   onDelete: (id: string) => void;
-  rank: number;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: student.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const getRankBadge = (rank: number) => {
-    if (rank === 1)
+  const getPositionBadge = (position: string) => {
+    if (position === "FIRST")
       return (
         <span className="inline-flex items-center rounded-full bg-yellow-500 px-2 py-1 text-xs font-bold text-white">
           🥇 الأول
         </span>
       );
-    if (rank === 2)
+    if (position === "SECOND")
       return (
         <span className="inline-flex items-center rounded-full bg-gray-400 px-2 py-1 text-xs font-bold text-white">
           🥈 الثاني
         </span>
       );
-    if (rank === 3)
+    if (position === "THIRD")
       return (
         <span className="inline-flex items-center rounded-full bg-orange-600 px-2 py-1 text-xs font-bold text-white">
           🥉 الثالث
         </span>
       );
-    return (
-      <span className="inline-flex items-center rounded-full bg-blue-500 px-2 py-1 text-xs font-bold text-white">
-        #{rank}
-      </span>
-    );
+    return null;
   };
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
       className={`flex items-center gap-4 rounded-lg border bg-white p-4 shadow-sm ${
         isSelected ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200"
       }`}
@@ -104,34 +81,20 @@ function SortableStudentItem({
         onChange={() => onSelect(student.id)}
         className="h-5 w-5 rounded border-gray-300"
       />
-      <button
-        {...attributes}
-        {...listeners}
-        className="cursor-grab touch-none text-gray-400 hover:text-gray-600 active:cursor-grabbing"
-        title="اسحب لإعادة الترتيب"
-      >
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 8h16M4 16h16"
-          />
-        </svg>
-      </button>
-      <img
-        src={student.image}
-        alt={student.name}
-        className="h-16 w-16 rounded-full object-cover"
-      />
+      {student.image ? (
+        <img
+          src={student.image}
+          alt={student.name}
+          className="h-16 w-16 rounded-full object-cover"
+        />
+      ) : (
+        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-2xl">
+          {student.name.charAt(0)}
+        </div>
+      )}
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          {getRankBadge(rank)}
+          {getPositionBadge(student.position)}
           <h3 className="font-medium text-gray-900">{student.name}</h3>
           {!student.isVisible && (
             <span className="rounded bg-red-100 px-2 py-1 text-xs text-red-800">
@@ -140,7 +103,7 @@ function SortableStudentItem({
           )}
         </div>
         <p className="text-sm text-gray-500">
-          {student.grade} • {student.score}
+          {student.grade.name} • {student.studentGrade}/{student.testGrade}
         </p>
       </div>
       <div className="flex gap-2">
@@ -189,6 +152,7 @@ function SortableStudentItem({
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -199,8 +163,10 @@ export default function AdminStudentsPage() {
   }>({ show: false, ids: [] });
   const [formData, setFormData] = useState({
     name: "",
-    grade: "",
-    score: "",
+    gradeId: "",
+    studentGrade: 0,
+    testGrade: 0,
+    position: "NONE" as "FIRST" | "SECOND" | "THIRD" | "NONE",
     image: "",
     isVisible: true,
   });
@@ -208,13 +174,22 @@ export default function AdminStudentsPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [showImageEditor, setShowImageEditor] = useState(false);
   const [editingImageUrl, setEditingImageUrl] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const studentsPerPage = 10;
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+  // Calculate pagination
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = students.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent,
   );
+  const totalPages = Math.ceil(students.length / studentsPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   useEffect(() => {
     fetchData();
@@ -222,59 +197,25 @@ export default function AdminStudentsPage() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch("/api/students");
-      if (response.ok) {
-        const data = await response.json();
-        setStudents(data);
+      const [studentsResponse, gradesResponse] = await Promise.all([
+        fetch("/api/students"),
+        fetch("/api/grades"),
+      ]);
+
+      if (studentsResponse.ok) {
+        const studentsData = await studentsResponse.json();
+        setStudents(studentsData);
+      }
+
+      if (gradesResponse.ok) {
+        const gradesData = await gradesResponse.json();
+        setGrades(gradesData);
       }
     } catch (error) {
-      console.error("Error fetching students:", error);
+      console.error("Error fetching data:", error);
       showToast.error("حدث خطأ أثناء جلب البيانات");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = students.findIndex((s) => s.id === active.id);
-    const newIndex = students.findIndex((s) => s.id === over.id);
-
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const newOrder = arrayMove(students, oldIndex, newIndex);
-
-    // Optimistically update UI
-    setStudents(newOrder);
-
-    // Update server with manual order
-    try {
-      const updates = newOrder.map((student, index) => ({
-        id: student.id,
-        manualOrder: index,
-      }));
-
-      const promises = updates.map((update) =>
-        fetch(`/api/students/${update.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ manualOrder: update.manualOrder }),
-        }),
-      );
-
-      await showToast.promise(Promise.all(promises), {
-        loading: "جاري تحديث الترتيب...",
-        success: "تم تحديث الترتيب بنجاح",
-        error: "فشل تحديث الترتيب",
-      });
-
-      fetchData();
-    } catch (error) {
-      showToast.error("فشل تحديث الترتيب");
-      fetchData(); // Revert on error
     }
   };
 
@@ -282,31 +223,26 @@ export default function AdminStudentsPage() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    // Handle multiple files for bulk upload
-    if (files.length > 1) {
-      handleBulkUpload(Array.from(files));
-    } else {
-      // Single file - open image editor
-      const file = files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setEditingImageUrl(e.target?.result as string);
-        setShowImageEditor(true);
-      };
-      reader.readAsDataURL(file);
-    }
+    // Always open image editor for single file
+    const file = files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setEditingImageUrl(e.target?.result as string);
+      setShowImageEditor(true);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleImageEditorSave = async (blob: Blob) => {
     setUploadingImage(true);
     try {
-      const formData = new FormData();
-      formData.append("file", blob, "edited-image.jpg");
-      formData.append("studentId", editingStudent?.id || "temp");
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", blob, "edited-image.jpg");
+      uploadFormData.append("studentId", editingStudent?.id || "temp");
 
       const response = await fetch("/api/students/upload", {
         method: "POST",
-        body: formData,
+        body: uploadFormData,
       });
 
       if (!response.ok) throw new Error("Upload failed");
@@ -324,56 +260,17 @@ export default function AdminStudentsPage() {
     }
   };
 
-  const handleBulkUpload = async (files: File[]) => {
-    showToast.success(`جاري رفع ${files.length} صورة...`);
-
-    for (const file of files) {
-      try {
-        const uploadFormData = new FormData();
-        uploadFormData.append("file", file);
-        uploadFormData.append("studentId", "temp");
-
-        const response = await fetch("/api/students/upload", {
-          method: "POST",
-          body: uploadFormData,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // Auto-create student with basic info from filename
-          const studentName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
-
-          await fetch("/api/students", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: studentName,
-              grade: "يرجى التحديث",
-              score: "0%",
-              image: data.path,
-              isVisible: false, // Hidden until user completes info
-            }),
-          });
-        }
-      } catch (error) {
-        console.error(`Failed to upload ${file.name}`, error);
-      }
-    }
-
-    showToast.success("تم رفع الصور بنجاح");
-    fetchData();
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
       !formData.name ||
-      !formData.grade ||
-      !formData.score ||
-      !formData.image
+      !formData.gradeId ||
+      formData.studentGrade === undefined ||
+      formData.testGrade === undefined ||
+      formData.testGrade < 1
     ) {
-      showToast.error("يرجى ملء جميع الحقول");
+      showToast.error("يرجى ملء جميع الحقول المطلوبة بشكل صحيح");
       return;
     }
 
@@ -398,8 +295,10 @@ export default function AdminStudentsPage() {
       setEditingStudent(null);
       setFormData({
         name: "",
-        grade: "",
-        score: "",
+        gradeId: "",
+        studentGrade: 0,
+        testGrade: 0,
+        position: "NONE",
         image: "",
         isVisible: true,
       });
@@ -435,12 +334,14 @@ export default function AdminStudentsPage() {
     setEditingStudent(student);
     setFormData({
       name: student.name,
-      grade: student.grade,
-      score: student.score,
-      image: student.image,
+      gradeId: student.gradeId,
+      studentGrade: student.studentGrade,
+      testGrade: student.testGrade,
+      position: student.position,
+      image: student.image || "",
       isVisible: student.isVisible,
     });
-    setImagePreview(student.image);
+    setImagePreview(student.image || "");
     setShowModal(true);
   };
 
@@ -457,6 +358,18 @@ export default function AdminStudentsPage() {
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
+
+  // Group grades by stage
+  const gradesByStage = grades.reduce(
+    (acc, grade) => {
+      if (!acc[grade.stage]) {
+        acc[grade.stage] = [];
+      }
+      acc[grade.stage].push(grade);
+      return acc;
+    },
+    {} as Record<string, Grade[]>,
+  );
 
   if (loading) {
     return (
@@ -488,8 +401,10 @@ export default function AdminStudentsPage() {
                 setEditingStudent(null);
                 setFormData({
                   name: "",
-                  grade: "",
-                  score: "",
+                  gradeId: "",
+                  studentGrade: 0,
+                  testGrade: 0,
+                  position: "NONE",
                   image: "",
                   isVisible: true,
                 });
@@ -538,16 +453,6 @@ export default function AdminStudentsPage() {
               تحديد الكل ({students.length})
             </span>
           </label>
-          <label className="cursor-pointer rounded-lg bg-green-500 px-4 py-2 text-white hover:bg-green-600">
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            رفع صور متعددة
-          </label>
         </div>
       </div>
 
@@ -559,53 +464,88 @@ export default function AdminStudentsPage() {
         {students.length === 0 ? (
           <p className="py-8 text-center text-gray-500">لا يوجد طلاب بعد</p>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={students.map((s) => s.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-2">
-                {students.map((student, index) => (
-                  <SortableStudentItem
-                    key={student.id}
-                    student={student}
-                    rank={index + 1}
-                    isSelected={selectedStudents.includes(student.id)}
-                    onSelect={handleSelectStudent}
-                    onEdit={handleEdit}
-                    onDelete={(id) =>
-                      setDeleteConfirm({ show: true, ids: [id] })
-                    }
-                  />
-                ))}
+          <>
+            <div className="space-y-2">
+              {currentStudents.map((student) => (
+                <StudentItem
+                  key={student.id}
+                  student={student}
+                  isSelected={selectedStudents.includes(student.id)}
+                  onSelect={handleSelectStudent}
+                  onEdit={handleEdit}
+                  onDelete={(id) => setDeleteConfirm({ show: true, ids: [id] })}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex justify-center items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    currentPage === 1
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-blue-500 hover:text-white hover:border-blue-500"
+                  }`}
+                >
+                  السابق
+                </button>
+
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`w-10 h-10 rounded-lg font-medium transition-all ${
+                          currentPage === page
+                            ? "bg-blue-500 text-white shadow-md"
+                            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+                </div>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    currentPage === totalPages
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-blue-500 hover:text-white hover:border-blue-500"
+                  }`}
+                >
+                  التالي
+                </button>
               </div>
-            </SortableContext>
-          </DndContext>
+            )}
+          </>
         )}
       </div>
 
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-lg bg-white p-6">
-            <h2 className="mb-4 text-xl font-bold text-gray-900">
+          <div className="w-full max-w-md rounded-lg bg-white p-4 max-h-[80vh] overflow-y-auto">
+            <h2 className="mb-3 text-lg font-bold text-gray-900">
               {editingStudent ? "تعديل طالب" : "إضافة طالب"}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   صورة الطالب
                 </label>
-                <div className="mt-1 flex items-center gap-4">
+                <div className="mt-1 flex items-center gap-3">
                   {imagePreview && (
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-20 w-20 rounded-full object-cover"
+                      className="h-16 w-16 rounded-full object-cover"
                     />
                   )}
                   <label className="cursor-pointer rounded bg-gray-200 px-4 py-2 hover:bg-gray-300">
@@ -637,31 +577,154 @@ export default function AdminStudentsPage() {
                 <label className="block text-sm font-medium text-gray-700">
                   الصف الدراسي
                 </label>
-                <input
-                  type="text"
-                  value={formData.grade}
+                <select
+                  value={formData.gradeId}
                   onChange={(e) =>
-                    setFormData({ ...formData, grade: e.target.value })
+                    setFormData({ ...formData, gradeId: e.target.value })
                   }
-                  placeholder="مثال: الصف الثالث الثانوي"
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                   required
+                >
+                  <option value="">اختر الصف</option>
+                  {Object.entries(gradesByStage).map(([stage, stageGrades]) => (
+                    <optgroup key={stage} label={stage}>
+                      {stageGrades.map((grade) => (
+                        <option key={grade.id} value={grade.id}>
+                          {grade.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  درجة الطالب
+                </label>
+                <input
+                  type="number"
+                  value={formData.studentGrade || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      studentGrade: e.target.value
+                        ? parseInt(e.target.value, 10)
+                        : 0,
+                    })
+                  }
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                  required
+                  min="0"
+                  placeholder="أدخل درجة الطالب"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  الدرجة
+                  درجة الاختبار
                 </label>
                 <input
-                  type="text"
-                  value={formData.score}
+                  type="number"
+                  value={formData.testGrade || ""}
                   onChange={(e) =>
-                    setFormData({ ...formData, score: e.target.value })
+                    setFormData({
+                      ...formData,
+                      testGrade: e.target.value
+                        ? parseInt(e.target.value, 10)
+                        : 0,
+                    })
                   }
-                  placeholder="مثال: 100%"
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
                   required
+                  min="1"
+                  placeholder="أدخل درجة الاختبار"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  الترتيب
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="position"
+                      value="FIRST"
+                      checked={formData.position === "FIRST"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          position: e.target.value as
+                            | "FIRST"
+                            | "SECOND"
+                            | "THIRD"
+                            | "NONE",
+                        })
+                      }
+                      className="h-4 w-4"
+                    />
+                    <span className="text-sm">🥇 الأول</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="position"
+                      value="SECOND"
+                      checked={formData.position === "SECOND"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          position: e.target.value as
+                            | "FIRST"
+                            | "SECOND"
+                            | "THIRD"
+                            | "NONE",
+                        })
+                      }
+                      className="h-4 w-4"
+                    />
+                    <span className="text-sm">🥈 الثاني</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="position"
+                      value="THIRD"
+                      checked={formData.position === "THIRD"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          position: e.target.value as
+                            | "FIRST"
+                            | "SECOND"
+                            | "THIRD"
+                            | "NONE",
+                        })
+                      }
+                      className="h-4 w-4"
+                    />
+                    <span className="text-sm">🥉 الثالث</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="position"
+                      value="NONE"
+                      checked={formData.position === "NONE"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          position: e.target.value as
+                            | "FIRST"
+                            | "SECOND"
+                            | "THIRD"
+                            | "NONE",
+                        })
+                      }
+                      className="h-4 w-4"
+                    />
+                    <span className="text-sm">بدون ترتيب</span>
+                  </label>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -684,8 +747,10 @@ export default function AdminStudentsPage() {
                     setEditingStudent(null);
                     setFormData({
                       name: "",
-                      grade: "",
-                      score: "",
+                      gradeId: "",
+                      studentGrade: 0,
+                      testGrade: 0,
+                      position: "NONE",
                       image: "",
                       isVisible: true,
                     });

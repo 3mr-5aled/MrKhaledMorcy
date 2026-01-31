@@ -9,7 +9,7 @@ import { z } from "zod";
 const answerSchema = z
   .object({
     title: z.string().min(1, "العنوان مطلوب"),
-    description: z.string().optional(),
+    description: z.string().optional().nullable(),
     type: z.enum(["PDF", "IMAGE", "YOUTUBE", "DRIVE"], {
       message: "نوع الإجابة غير صالح",
     }),
@@ -17,6 +17,8 @@ const answerSchema = z
     images: z.array(z.string()).optional().default([]),
     driveUrl: z.string().optional().nullable(),
     lessonId: z.string().min(1, "الدرس مطلوب").optional().nullable(),
+    unitId: z.string().optional().nullable(),
+    gradeId: z.string().optional().nullable(),
     categoryType: z.enum(["LESSON", "UNIT_EXERCISE", "EXAM", "OTHER"], {
       message: "نوع الفئة غير صالح",
     }),
@@ -62,16 +64,14 @@ export async function GET(request: Request) {
         ...(lessonId && { lessonId }),
         ...(categoryType && { categoryType: categoryType as any }),
         ...(unitId && {
-          lesson: {
-            unitId,
-          },
+          OR: [{ unitId }, { lesson: { unitId } }],
         }),
         ...(gradeId && {
-          lesson: {
-            unit: {
-              gradeId,
-            },
-          },
+          OR: [
+            { gradeId },
+            { unit: { gradeId } },
+            { lesson: { unit: { gradeId } } },
+          ],
         }),
         // Only show published/visible answers to non-admin users
         ...(!isAdmin && {
@@ -90,6 +90,12 @@ export async function GET(request: Request) {
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 
@@ -111,7 +117,34 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const validatedData = answerSchema.parse(body);
+
+    // Clean up empty string fields to null or undefined
+    const cleanedBody = {
+      ...body,
+      lessonId: body.lessonId === "" ? null : body.lessonId,
+      unitId: body.unitId === "" ? null : body.unitId,
+      gradeId: body.gradeId === "" ? null : body.gradeId,
+      driveUrl: body.driveUrl === "" ? null : body.driveUrl,
+      customTitle: body.customTitle === "" ? null : body.customTitle,
+      description: body.description === "" ? null : body.description,
+    };
+
+    const validatedData = answerSchema.parse(cleanedBody);
+
+    // If lessonId is provided, automatically set unitId and gradeId from the lesson
+    let finalUnitId = validatedData.unitId;
+    let finalGradeId = validatedData.gradeId;
+
+    if (validatedData.lessonId) {
+      const lesson = await db.lesson.findUnique({
+        where: { id: validatedData.lessonId },
+        include: { unit: true },
+      });
+      if (lesson) {
+        finalUnitId = lesson.unitId;
+        finalGradeId = lesson.unit.gradeId;
+      }
+    }
 
     // Convert Egypt time to UTC for storage
     const publishAtUTC = validatedData.publishAt
@@ -124,6 +157,8 @@ export async function POST(request: Request) {
     const answer = await db.answer.create({
       data: {
         ...validatedData,
+        unitId: finalUnitId,
+        gradeId: finalGradeId,
         publishAt: publishAtUTC,
         status: validatedData.status || autoStatus,
       },
@@ -137,6 +172,12 @@ export async function POST(request: Request) {
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 
@@ -156,8 +197,10 @@ export async function POST(request: Request) {
     return NextResponse.json(answer, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("Validation error:", error.issues);
+      const errorMessage = error.issues[0]?.message || "بيانات غير صالحة";
       return NextResponse.json(
-        { error: "بيانات غير صالحة", details: error.issues },
+        { error: errorMessage, details: error.issues },
         { status: 400 },
       );
     }

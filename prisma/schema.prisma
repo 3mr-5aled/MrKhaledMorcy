@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // User model for teacher/admin authentication
@@ -41,6 +42,8 @@ model Grade {
   updatedAt DateTime @updatedAt
   
   units     Unit[]
+  answers   Answer[]
+  students  Student[]
 
   @@map("grades")
 }
@@ -57,6 +60,7 @@ model Unit {
   updatedAt DateTime @updatedAt
   
   lessons   Lesson[]
+  answers   Answer[]
 
   @@unique([gradeId, slug])
   @@map("units")
@@ -90,6 +94,10 @@ model Answer {
   driveUrl     String?       // Google Drive file or folder URL
   lessonId     String?
   lesson       Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  unitId       String?       // Direct unit reference for unit-level answers
+  unit         Unit?         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  gradeId      String?       // Direct grade reference for grade-level answers
+  grade        Grade?        @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   categoryType CategoryType  // LESSON, UNIT_EXERCISE, EXAM, OTHER
   customTitle  String?       // For OTHER category type
   order        Int           @default(0)
@@ -170,16 +178,26 @@ enum ActivityType {
 
 // Student model for "لوحة الشرف" (Best Students)
 model Student {
-  id          String   @id @default(cuid())
-  name        String   // Student's full name in Arabic
-  grade       String   // e.g., "الصف الثالث الثانوي"
-  score       String   // e.g., "100%", "99%"
-  image       String   // Path to student's image
-  manualOrder Int?     // Manual ordering for students with same score (null = auto-sort by score)
-  isVisible   Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String          @id @default(cuid())
+  name         String          // Student's full name in Arabic
+  gradeId      String
+  grade        Grade           @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  studentGrade Int             // Student's grade (e.g., 29)
+  testGrade    Int             // Test total grade (e.g., 30)
+  position     StudentPosition @default(NONE) // FIRST, SECOND, THIRD, NONE
+  image        String?         // Path to student's image (optional - will show avatar placeholder if null)
+  isVisible    Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@map("students")
-  @@index([manualOrder])
+  @@index([gradeId])
+  @@index([position])
+}
+
+enum StudentPosition {
+  FIRST
+  SECOND
+  THIRD
+  NONE
 }

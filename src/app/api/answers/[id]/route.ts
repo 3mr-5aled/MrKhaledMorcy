@@ -15,6 +15,8 @@ const answerSchema = z.object({
   images: z.array(z.string()).optional(),
   driveUrl: z.string().optional().nullable(),
   lessonId: z.string().optional().nullable(),
+  unitId: z.string().optional().nullable(),
+  gradeId: z.string().optional().nullable(),
   categoryType: z.enum(["LESSON", "UNIT_EXERCISE", "EXAM", "OTHER"]).optional(),
   customTitle: z.string().optional().nullable(),
   order: z.number().int().min(0).optional(),
@@ -42,6 +44,12 @@ export async function GET(
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 
@@ -74,7 +82,19 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const validatedData = answerSchema.parse(body);
+
+    // Clean up empty string fields to null
+    const cleanedBody = {
+      ...body,
+      lessonId: body.lessonId === "" ? null : body.lessonId,
+      unitId: body.unitId === "" ? null : body.unitId,
+      gradeId: body.gradeId === "" ? null : body.gradeId,
+      driveUrl: body.driveUrl === "" ? null : body.driveUrl,
+      customTitle: body.customTitle === "" ? null : body.customTitle,
+      description: body.description === "" ? null : body.description,
+    };
+
+    const validatedData = answerSchema.parse(cleanedBody);
 
     // Get old answer for comparison
     const oldAnswer = await db.answer.findUnique({
@@ -124,10 +144,29 @@ export async function PUT(
       newStatus = calculateStatus(publishAtUTC);
     }
 
+    // If lessonId is being updated, automatically set unitId and gradeId from the lesson
+    let updateData: any = { ...validatedData };
+
+    if (validatedData.lessonId !== undefined) {
+      if (validatedData.lessonId) {
+        const lesson = await db.lesson.findUnique({
+          where: { id: validatedData.lessonId },
+          include: { unit: true },
+        });
+        if (lesson) {
+          updateData.unitId = lesson.unitId;
+          updateData.gradeId = lesson.unit.gradeId;
+        }
+      } else {
+        // If lessonId is set to null, keep the manually set unitId and gradeId
+        // (they should be in validatedData already)
+      }
+    }
+
     const answer = await db.answer.update({
       where: { id },
       data: {
-        ...validatedData,
+        ...updateData,
         ...(publishAtUTC !== undefined && { publishAt: publishAtUTC }),
         ...(newStatus && { status: newStatus }),
       },
@@ -141,6 +180,12 @@ export async function PUT(
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 
@@ -213,6 +258,13 @@ export async function DELETE(
     if (answer.type === "IMAGE" && answer.images && answer.images.length > 0) {
       for (const imagePath of answer.images) {
         await deleteFile(imagePath);
+      }
+    }
+
+    // Delete all thumbnails if they exist
+    if (answer.thumbnails && answer.thumbnails.length > 0) {
+      for (const thumbnailPath of answer.thumbnails) {
+        await deleteFile(thumbnailPath);
       }
     }
 

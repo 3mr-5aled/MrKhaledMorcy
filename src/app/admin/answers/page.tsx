@@ -180,15 +180,46 @@ export default function AdminAnswersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate lesson is selected for LESSON category
+    if (formData.categoryType === "LESSON" && !formData.lessonId) {
+      showToast.error("يرجى اختيار الدرس");
+      return;
+    }
+
+    // Validate that required files are uploaded based on type
+    if (formData.type === "PDF" && !formData.url) {
+      showToast.error("يرجى رفع ملف PDF أولاً");
+      return;
+    }
+    if (
+      formData.type === "IMAGE" &&
+      formData.images.length === 0 &&
+      !formData.url
+    ) {
+      showToast.error("يرجى رفع صورة واحدة على الأقل");
+      return;
+    }
+    if (formData.type === "YOUTUBE" && !formData.url) {
+      showToast.error("يرجى إدخال رابط YouTube");
+      return;
+    }
+    if (formData.type === "DRIVE" && !formData.driveUrl) {
+      showToast.error("يرجى إدخال رابط Google Drive");
+      return;
+    }
+
     try {
       const method = editingAnswer ? "PUT" : "POST";
       const url = editingAnswer
         ? `/api/answers/${editingAnswer.id}`
         : "/api/answers";
 
-      // Convert publishAt to ISO string for API
+      // Convert publishAt to ISO string for API and remove thumbnails (not in API schema)
+      const { thumbnails, ...dataToSubmit } = formData;
       const submitData = {
-        ...formData,
+        ...dataToSubmit,
+        unitId: selectedUnit || null,
+        gradeId: selectedGrade || null,
         publishAt: formData.publishAt ? formData.publishAt.toISOString() : null,
       };
 
@@ -257,9 +288,9 @@ export default function AdminAnswersPage() {
   const handleEdit = async (answer: any) => {
     setEditingAnswer(answer);
 
-    // Load the grade and unit for the answer's lesson
-    const gradeId = answer.lesson?.unit?.gradeId;
-    const unitId = answer.lesson?.unitId;
+    // Load the grade and unit - check both lesson-based and direct references
+    const gradeId = answer.gradeId || answer.lesson?.unit?.gradeId;
+    const unitId = answer.unitId || answer.lesson?.unitId;
 
     if (gradeId) {
       setSelectedGrade(gradeId);
@@ -1127,61 +1158,6 @@ export default function AdminAnswersPage() {
 
               <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-2xl flex gap-3 -mx-6 -mb-6">
                 <button
-                  type="button"
-                  onClick={async () => {
-                    // Set to published and submit immediately
-                    const publishNowData = {
-                      ...formData,
-                      status: "PUBLISHED",
-                      publishAt: null,
-                      isVisible: true,
-                    };
-
-                    try {
-                      const method = editingAnswer ? "PUT" : "POST";
-                      const url = editingAnswer
-                        ? `/api/answers/${editingAnswer.id}`
-                        : "/api/answers";
-
-                      const res = await fetch(url, {
-                        method,
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(publishNowData),
-                      });
-
-                      const data = await res.json();
-
-                      if (!res.ok) {
-                        throw new Error(data.error || "فشل النشر");
-                      }
-
-                      showToast.success("تم نشر الإجابة بنجاح!");
-                      setShowForm(false);
-                      setEditingAnswer(null);
-                      fetchData();
-                      resetForm();
-                    } catch (error: any) {
-                      showToast.error(error.message || "حدث خطأ");
-                    }
-                  }}
-                  className="bg-gradient-to-r from-[#06D6A0] to-[#1B9AAA] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  نشر الآن
-                </button>
-                <button
                   type="submit"
                   className="flex-1 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all"
                 >
@@ -1500,8 +1476,8 @@ export default function AdminAnswersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">
-                      {answer.lesson?.unit?.grade?.name} /{" "}
-                      {answer.lesson?.unit?.name}
+                      {answer.grade?.name || answer.lesson?.unit?.grade?.name} /{" "}
+                      {answer.unit?.name || answer.lesson?.unit?.name}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
@@ -1565,18 +1541,21 @@ export default function AdminAnswersPage() {
                         )}
                         <button
                           onClick={async () => {
-                            if (
-                              !answer.lesson?.unit?.grade?.slug ||
-                              !answer.lesson?.unit?.slug
-                            ) {
+                            const gradeSlug =
+                              answer.grade?.slug ||
+                              answer.lesson?.unit?.grade?.slug;
+                            const unitSlug =
+                              answer.unit?.slug || answer.lesson?.unit?.slug;
+
+                            if (!gradeSlug || !unitSlug) {
                               alert(
                                 "لا يمكن مشاركة هذه الإجابة - معلومات المرحلة أو الوحدة مفقودة",
                               );
                               return;
                             }
                             const params = new URLSearchParams();
-                            params.set("grade", answer.lesson.unit.grade.slug);
-                            params.set("unit", answer.lesson.unit.slug);
+                            params.set("grade", gradeSlug);
+                            params.set("unit", unitSlug);
                             const url = `${window.location.origin}/answers?${params.toString()}`;
 
                             if (navigator.share) {

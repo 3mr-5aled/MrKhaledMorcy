@@ -7,10 +7,11 @@ import { z } from "zod";
 
 const studentUpdateSchema = z.object({
   name: z.string().min(1).optional(),
-  grade: z.string().min(1).optional(),
-  score: z.string().min(1).optional(),
+  gradeId: z.string().min(1).optional(),
+  studentGrade: z.number().int().min(0).optional(),
+  testGrade: z.number().int().min(1).optional(),
+  position: z.enum(["FIRST", "SECOND", "THIRD", "NONE"]).optional(),
   image: z.string().min(1).optional(),
-  manualOrder: z.number().int().nullable().optional(),
   isVisible: z.boolean().optional(),
 });
 
@@ -22,6 +23,17 @@ export async function GET(
   try {
     const student = await db.student.findUnique({
       where: { id },
+      include: {
+        grade: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            stage: true,
+            color: true,
+          },
+        },
+      },
     });
 
     if (!student) {
@@ -55,23 +67,27 @@ export async function PUT(
     const student = await db.student.update({
       where: { id },
       data: validatedData,
+      include: {
+        grade: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            stage: true,
+            color: true,
+          },
+        },
+      },
     });
 
-    // Log activity (only if not just updating order)
-    if (
-      validatedData.name ||
-      validatedData.grade ||
-      validatedData.score ||
-      validatedData.image
-    ) {
-      await logActivity({
-        action: "UPDATE",
-        entityType: "student",
-        entityId: student.id,
-        entityName: student.name,
-        userId: session.user.id,
-      });
-    }
+    // Log activity
+    await logActivity({
+      action: "UPDATE",
+      entityType: "student",
+      entityId: student.id,
+      entityName: student.name,
+      userId: session.user.id,
+    });
 
     return NextResponse.json(student);
   } catch (error) {

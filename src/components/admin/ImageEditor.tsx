@@ -48,9 +48,10 @@ export default function ImageEditor({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size
-    canvas.width = 600;
-    canvas.height = 600;
+    // Set canvas size to be responsive (50vh max height, 50vw max width)
+    const maxSize = Math.min(window.innerWidth * 0.5, window.innerHeight * 0.5);
+    canvas.width = maxSize;
+    canvas.height = maxSize;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -191,15 +192,15 @@ export default function ImageEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="w-full max-w-4xl rounded-lg bg-white p-6">
-        <h3 className="mb-4 text-xl font-bold text-gray-900">تعديل الصورة</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 overflow-y-auto">
+      <div className="w-full max-w-2xl my-4 rounded-lg bg-white p-4 max-h-[90vh] overflow-y-auto">
+        <h3 className="mb-3 text-lg font-bold text-gray-900">تعديل الصورة</h3>
 
         {/* Canvas */}
-        <div className="mb-4 flex justify-center">
+        <div className="mb-3 flex justify-center">
           <canvas
             ref={canvasRef}
-            className="cursor-crosshair border-2 border-gray-300 rounded"
+            className="cursor-crosshair border-2 border-gray-300 rounded max-w-full h-auto"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
