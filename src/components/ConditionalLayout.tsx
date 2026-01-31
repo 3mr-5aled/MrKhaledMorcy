@@ -11,14 +11,19 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const isAdminPage =
     pathname?.startsWith("/admin") || pathname?.startsWith("/login");
   const isQuizPage = pathname?.match(/^\/quizzes\/[^\/]+$/);
+  const isMaintenancePage = pathname === "/maintenance";
 
   return (
     <>
-      {!isAdminPage && !isQuizPage && <Header />}
+      {!isAdminPage && !isQuizPage && !isMaintenancePage && <Header />}
       <main>{children}</main>
-      {!isAdminPage && !isQuizPage && <Footer />}
-      {!isAdminPage && !isQuizPage && <FloatingWhatsApp />}
-      {!isAdminPage && !isQuizPage && <FloatingQuickLinks />}
+      {!isAdminPage && !isQuizPage && !isMaintenancePage && <Footer />}
+      {!isAdminPage && !isQuizPage && !isMaintenancePage && (
+        <FloatingWhatsApp />
+      )}
+      {!isAdminPage && !isQuizPage && !isMaintenancePage && (
+        <FloatingQuickLinks />
+      )}
     </>
   );
 }
