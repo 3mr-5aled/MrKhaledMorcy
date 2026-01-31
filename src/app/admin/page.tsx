@@ -17,6 +17,7 @@ export default async function AdminDashboard() {
     lessonsCount,
     answersCount,
     quizzesCount,
+    filesCount,
     recentActivities,
   ] = await Promise.all([
     db.grade.count(),
@@ -24,6 +25,7 @@ export default async function AdminDashboard() {
     db.lesson.count(),
     db.answer.count(),
     db.quiz.count(),
+    db.file.count({ where: { isActive: true } }),
     getRecentActivities(10),
   ]);
 
@@ -35,7 +37,7 @@ export default async function AdminDashboard() {
       />
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
         <StatsCard
           title="المراحل الدراسية"
           value={gradesCount}
@@ -136,12 +138,32 @@ export default async function AdminDashboard() {
             </svg>
           }
         />
+        <StatsCard
+          title="الملفات"
+          value={filesCount}
+          color="#3B82F6"
+          icon={
+            <svg
+              className="w-7 h-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+              />
+            </svg>
+          }
+        />
       </div>
 
       {/* Quick Actions */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h2 className="text-xl font-bold text-gray-900 mb-4">إجراءات سريعة</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <a
             href="/admin/grades"
             className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-[#1B9AAA]/10 to-[#06D6A0]/10 hover:shadow-md transition-all duration-300 group"
@@ -214,6 +236,31 @@ export default async function AdminDashboard() {
             <div>
               <h3 className="font-bold text-gray-900">رفع إجابات</h3>
               <p className="text-sm text-gray-600">PDF، صور، أو فيديو</p>
+            </div>
+          </a>
+
+          <a
+            href="/admin/files"
+            className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-[#3B82F6]/10 to-[#2563EB]/10 hover:shadow-md transition-all duration-300 group"
+          >
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900">إدارة الملفات</h3>
+              <p className="text-sm text-gray-600">تتبع وحذف الملفات</p>
             </div>
           </a>
 

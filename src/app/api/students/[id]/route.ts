@@ -1,6 +1,7 @@
 import { logActivity } from "@/lib/activity";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { deleteFile, getFileRecordByPath } from "@/lib/fileUtils";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -125,6 +126,38 @@ export async function DELETE(
 
     if (!student) {
       return NextResponse.json({ error: "الطالب غير موجود" }, { status: 404 });
+    }
+
+    // Version and delete student image if it exists
+    if (student.image) {
+      const fileRecord = await getFileRecordByPath(student.image);
+      if (fileRecord) {
+        await deleteFile(student.image, {
+          fileId: fileRecord.id,
+          userId: session.user.id,
+          changeReason: "Student deleted",
+        });
+      } else {
+        // No file record, delete without versioning
+        await deleteFile(student.image);
+      }
+
+      // Also delete thumbnail if it exists
+      const thumbPath = student.image.replace(
+        /\.(webp|jpg|jpeg|png|gif)$/,
+        "-thumb.$1",
+      );
+      const thumbRecord = await getFileRecordByPath(thumbPath);
+      if (thumbRecord) {
+        await deleteFile(thumbPath, {
+          fileId: thumbRecord.id,
+          userId: session.user.id,
+          changeReason: "Student deleted",
+        });
+      } else {
+        // Try to delete thumbnail even without record
+        await deleteFile(thumbPath);
+      }
     }
 
     await db.student.delete({

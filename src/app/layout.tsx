@@ -10,8 +10,16 @@ const cairo = Cairo({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+// Safely get the base URL for metadata
+const getBaseUrl = () => {
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.NEXT_PUBLIC_URL) return process.env.NEXT_PUBLIC_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  metadataBase: new URL(getBaseUrl()),
   title: "مستر خالد مرسي | مدرس لغة إنجليزية معتمد من Cambridge",
   description:
     "مستر خالد مرسي - مدرس معتمد من جامعة Cambridge البريطانية بخبرة 26 سنة في تدريس اللغة الإنجليزية. حصص لايف، مسجلة، واوفلاين.",

@@ -1,8 +1,11 @@
 import { authOptions } from "@/lib/auth";
 import {
   ALLOWED_FILE_TYPES,
+  createFileRecord,
+  deleteFile as deleteFileWithVersioning,
   FILE_SIZE_LIMITS,
   getFileExtension,
+  getFileRecordByPath,
   sanitizeFilename,
   validateFileSize,
   validateFileType,
@@ -116,6 +119,29 @@ export async function POST(request: Request) {
           `Image optimized: ${file.name} - Size reduced by ${reduction}% (${optimizationResult.originalSize} → ${optimizationResult.optimizedSize} bytes)`,
         );
 
+        // Create File records for the optimized image and thumbnail
+        await createFileRecord(
+          optimizedWebPath,
+          "IMAGE",
+          optimizationResult.optimizedSize,
+          file.name,
+          "image/webp",
+          "ANSWER",
+          null, // linkedRecordId will be set when Answer is created
+          session.user.id,
+        );
+
+        await createFileRecord(
+          thumbnailWebPath,
+          "THUMBNAIL",
+          optimizationResult.thumbnailSize,
+          file.name.replace(/\.[^.]+$/, "-thumb.webp"),
+          "image/webp",
+          "ANSWER",
+          null,
+          session.user.id,
+        );
+
         return NextResponse.json({
           path: optimizedWebPath,
           thumbnail: thumbnailWebPath,
@@ -135,6 +161,18 @@ export async function POST(request: Request) {
 
     // Return the web-accessible path (for PDFs)
     const webPath = `/answers/${gradeId}/${unitId}/${filename}`;
+
+    // Create File record for PDF
+    await createFileRecord(
+      webPath,
+      "PDF",
+      buffer.length,
+      file.name,
+      "application/pdf",
+      "ANSWER",
+      null, // linkedRecordId will be set when Answer is created
+      session.user.id,
+    );
 
     return NextResponse.json({
       path: webPath,
@@ -186,18 +224,37 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "الملف غير موجود" }, { status: 404 });
     }
 
-    // Delete the file
-    await unlink(fullPath);
+    // Get file record and use versioning if available
+    const fileRecord = await getFileRecordByPath(filePath);
+    if (fileRecord) {
+      await deleteFileWithVersioning(filePath, {
+        fileId: fileRecord.id,
+        userId: session.user.id,
+        changeReason: "File deleted via upload endpoint",
+      });
+    } else {
+      // No file record, delete without versioning (legacy files)
+      await unlink(fullPath);
+    }
 
     // If it's an image (webp), also try to delete the thumbnail
     if (fullPath.endsWith(".webp") && !fullPath.includes("-thumb.webp")) {
       const thumbnailPath = fullPath.replace(".webp", "-thumb.webp");
+      const thumbnailWebPath = filePath.replace(".webp", "-thumb.webp");
       if (existsSync(thumbnailPath)) {
-        try {
-          await unlink(thumbnailPath);
-        } catch (err) {
-          console.error("Error deleting thumbnail:", err);
-          // Continue even if thumbnail deletion fails
+        const thumbRecord = await getFileRecordByPath(thumbnailWebPath);
+        if (thumbRecord) {
+          await deleteFileWithVersioning(thumbnailWebPath, {
+            fileId: thumbRecord.id,
+            userId: session.user.id,
+            changeReason: "Thumbnail deleted via upload endpoint",
+          });
+        } else {
+          try {
+            await unlink(thumbnailPath);
+          } catch (err) {
+            console.error("Error deleting thumbnail:", err);
+          }
         }
       }
     }

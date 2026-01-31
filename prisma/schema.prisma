@@ -17,10 +17,12 @@ model User {
   email      String     @unique
   name       String?
   password   String     // bcrypt hashed
-  role       Role       @default(ADMIN)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  activities Activity[]
+  role              Role          @default(ADMIN)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  activities        Activity[]
+  uploadedFiles     File[]        @relation("UploadedFiles")
+  createdVersions   FileVersion[] @relation("CreatedVersions")
 
   @@map("users")
 }
@@ -200,4 +202,62 @@ enum StudentPosition {
   SECOND
   THIRD
   NONE
+}
+
+// File model for tracking all uploaded files with metadata
+model File {
+  id             String       @id @default(cuid())
+  path           String       @unique // Web-accessible path (e.g., "/answers/prep-1/unit-id/file.pdf")
+  type           FileType     // PDF, IMAGE, THUMBNAIL
+  size           Int          // File size in bytes
+  originalName   String       // Original filename when uploaded
+  mimeType       String?      // MIME type (e.g., "application/pdf", "image/webp")
+  usedIn         FileUsage    // ANSWER, STUDENT, OTHER
+  linkedRecordId String?      // ID of the related Answer/Student record
+  uploadedBy     String?      // User ID who uploaded the file
+  uploader       User?        @relation("UploadedFiles", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  isOrphaned     Boolean      @default(false) // Flagged when no longer referenced
+  isActive       Boolean      @default(true) // False when versioned/archived
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  
+  versions       FileVersion[]
+
+  @@map("files")
+  @@index([usedIn])
+  @@index([linkedRecordId])
+  @@index([isOrphaned])
+  @@index([isActive])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum FileType {
+  PDF
+  IMAGE
+  THUMBNAIL
+}
+
+enum FileUsage {
+  ANSWER
+  STUDENT
+  OTHER
+}
+
+// FileVersion model for tracking file version history (for rollback)
+model FileVersion {
+  id            String   @id @default(cuid())
+  fileId        String
+  file          File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  path          String   // Path to the versioned file in .versions/ directory
+  versionNumber Int      // Sequential version number (1, 2, 3...)
+  size          Int      // File size in bytes
+  createdBy     String?  // User ID who created this version
+  creator       User?    @relation("CreatedVersions", fields: [createdBy], references: [id], onDelete: SetNull)
+  changeReason  String?  // Why the version was created (e.g., "Replaced with new file", "Deleted")
+  createdAt     DateTime @default(now())
+
+  @@map("file_versions")
+  @@unique([fileId, versionNumber])
+  @@index([fileId])
+  @@index([createdAt(sort: Desc)])
 }

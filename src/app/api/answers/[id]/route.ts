@@ -2,7 +2,7 @@ import { logActivity } from "@/lib/activity";
 import { authOptions } from "@/lib/auth";
 import { calculateStatus, formatEgyptDate, toUTC } from "@/lib/dateUtils";
 import { db } from "@/lib/db";
-import { deleteFile } from "@/lib/fileUtils";
+import { deleteFile, getFileRecordByPath } from "@/lib/fileUtils";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -108,13 +108,57 @@ export async function PUT(
       );
     }
 
-    // If URL is being updated and it's a file, delete the old file
+    // If URL is being updated and it's a file, version the old file
     if (
       validatedData.url &&
       oldAnswer.url !== validatedData.url &&
       (oldAnswer.type === "PDF" || oldAnswer.type === "IMAGE")
     ) {
-      await deleteFile(oldAnswer.url);
+      const fileRecord = await getFileRecordByPath(oldAnswer.url);
+      if (fileRecord) {
+        await deleteFile(oldAnswer.url, {
+          fileId: fileRecord.id,
+          userId: session.user.id,
+          changeReason: "File replaced with new upload",
+        });
+      } else {
+        // No file record exists, delete without versioning
+        await deleteFile(oldAnswer.url);
+      }
+    }
+
+    // Check for removed images in the images array and mark them as orphaned
+    if (validatedData.images && oldAnswer.images) {
+      const removedImages = oldAnswer.images.filter(
+        (img) => !validatedData.images?.includes(img),
+      );
+      for (const removedImage of removedImages) {
+        const fileRecord = await getFileRecordByPath(removedImage);
+        if (fileRecord) {
+          await deleteFile(removedImage, {
+            fileId: fileRecord.id,
+            userId: session.user.id,
+            changeReason: "Image removed from answer",
+          });
+        }
+      }
+    }
+
+    // Check for removed thumbnails
+    if (validatedData.thumbnails && oldAnswer.thumbnails) {
+      const removedThumbnails = oldAnswer.thumbnails.filter(
+        (thumb) => !validatedData.thumbnails?.includes(thumb),
+      );
+      for (const removedThumbnail of removedThumbnails) {
+        const fileRecord = await getFileRecordByPath(removedThumbnail);
+        if (fileRecord) {
+          await deleteFile(removedThumbnail, {
+            fileId: fileRecord.id,
+            userId: session.user.id,
+            changeReason: "Thumbnail removed from answer",
+          });
+        }
+      }
     }
 
     // Convert Egypt time to UTC for storage
@@ -249,22 +293,49 @@ export async function DELETE(
       );
     }
 
-    // Delete file if it's a PDF or IMAGE
+    // Version and delete file if it's a PDF or IMAGE
     if (answer.type === "PDF" && answer.url) {
-      await deleteFile(answer.url);
-    }
-
-    // Delete all images if type is IMAGE
-    if (answer.type === "IMAGE" && answer.images && answer.images.length > 0) {
-      for (const imagePath of answer.images) {
-        await deleteFile(imagePath);
+      const fileRecord = await getFileRecordByPath(answer.url);
+      if (fileRecord) {
+        await deleteFile(answer.url, {
+          fileId: fileRecord.id,
+          userId: session.user.id,
+          changeReason: "Answer deleted",
+        });
+      } else {
+        await deleteFile(answer.url);
       }
     }
 
-    // Delete all thumbnails if they exist
+    // Version and delete all images if type is IMAGE
+    if (answer.type === "IMAGE" && answer.images && answer.images.length > 0) {
+      for (const imagePath of answer.images) {
+        const fileRecord = await getFileRecordByPath(imagePath);
+        if (fileRecord) {
+          await deleteFile(imagePath, {
+            fileId: fileRecord.id,
+            userId: session.user.id,
+            changeReason: "Answer deleted",
+          });
+        } else {
+          await deleteFile(imagePath);
+        }
+      }
+    }
+
+    // Version and delete all thumbnails if they exist
     if (answer.thumbnails && answer.thumbnails.length > 0) {
       for (const thumbnailPath of answer.thumbnails) {
-        await deleteFile(thumbnailPath);
+        const fileRecord = await getFileRecordByPath(thumbnailPath);
+        if (fileRecord) {
+          await deleteFile(thumbnailPath, {
+            fileId: fileRecord.id,
+            userId: session.user.id,
+            changeReason: "Answer deleted",
+          });
+        } else {
+          await deleteFile(thumbnailPath);
+        }
       }
     }
 
