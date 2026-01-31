@@ -13,7 +13,8 @@ export type EntityType =
   | "lesson"
   | "answer"
   | "quiz"
-  | "student";
+  | "student"
+  | "file";
 
 interface LogActivityParams {
   action: ActivityAction;
@@ -79,6 +80,7 @@ export function getActivityMessage(
     answer: "الإجابة",
     quiz: "الاختبار",
     student: "الطالب",
+    file: "الملف",
   };
 
   const actionArabic: Record<ActivityAction, string> = {

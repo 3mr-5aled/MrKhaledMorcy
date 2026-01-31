@@ -13,6 +13,7 @@ const answerSchema = z.object({
   type: z.enum(["PDF", "IMAGE", "YOUTUBE", "DRIVE"]).optional(),
   url: z.string().optional(),
   images: z.array(z.string()).optional(),
+  thumbnails: z.array(z.string()).optional(),
   driveUrl: z.string().optional().nullable(),
   lessonId: z.string().optional().nullable(),
   unitId: z.string().optional().nullable(),

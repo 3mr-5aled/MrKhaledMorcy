@@ -174,7 +174,6 @@ export async function GET(request: Request) {
         await logActivity({
           action: "DELETE",
           entityType: "file",
-          entityId: null,
           entityName: `Scheduled cleanup: ${results.orphanedFilesDeleted} orphaned files, ${results.versionsDeleted} old versions`,
           userId: adminUser.id,
         });
