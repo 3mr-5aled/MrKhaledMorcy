@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -17,7 +18,7 @@ const navLinks = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,9 +38,14 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1B9AAA] to-[#06D6A0] flex items-center justify-center text-white font-bold text-xl">
-              خ
-            </div>
+            <Image
+              src="/images/logo.png"
+              alt="مستر خالد مرسي"
+              width={80}
+              height={80}
+              className="object-contain"
+              priority
+            />
             <span
               className={`font-bold text-lg hidden sm:block ${isScrolled ? "text-gray-900" : "text-gray-900"}`}
             >

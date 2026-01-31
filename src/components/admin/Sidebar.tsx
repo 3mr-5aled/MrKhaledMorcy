@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -130,6 +131,23 @@ export default function Sidebar() {
 
   return (
     <aside className="h-screen w-64 bg-white border-l border-gray-200 flex flex-col shadow-sm sticky top-0">
+      {/* Logo */}
+      <div className="p-4 border-b border-gray-200">
+        <Link href="/admin" className="flex items-center gap-3">
+          <Image
+            src="/images/logo.png"
+            alt="مستر خالد مرسي"
+            width={80}
+            height={80}
+            className="object-contain"
+          />
+          <div>
+            <h2 className="font-bold text-gray-900">مستر خالد مرسي</h2>
+            <p className="text-xs text-gray-500">لوحة التحكم</p>
+          </div>
+        </Link>
+      </div>
+
       {/* Navigation */}
       <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-2">

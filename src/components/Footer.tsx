@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -10,9 +11,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1B9AAA] to-[#06D6A0] flex items-center justify-center text-white font-bold text-xl">
-                خ
-              </div>
+              <Image
+                src="/images/logo.png"
+                alt="مستر خالد مرسي"
+                width={80}
+                height={80}
+                className="object-contain"
+              />
               <div>
                 <h3 className="font-bold text-lg">مستر خالد مرسي</h3>
                 <p className="text-gray-400 text-sm">مدرس لغة إنجليزية معتمد</p>
