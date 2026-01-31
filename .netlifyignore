@@ -1,0 +1,18 @@
+# Exclude large files and directories from Netlify deploy
+node_modules/
+.git/
+.next/cache/
+.next/static/
+public/images/
+public/answers/
+*.log
+*.md
+!README.md
+.vscode/
+.idea/
+*.test.*
+*.spec.*
+__tests__/
+coverage/
+.env*
+!.env.example

@@ -8,6 +8,13 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[functions]
+  # Exclude large files from function bundle
+  included_files = []
+  # Use external node modules to reduce bundle size
+  external_node_modules = ["prisma", "@prisma/client", "sharp"]
+  node_bundler = "esbuild"
+
 # Scheduled function to auto-publish answers
 # Runs every 10 minutes to check for scheduled answers that need to be published
 [[scheduled_functions]]
