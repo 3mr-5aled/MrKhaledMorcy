@@ -35,9 +35,10 @@ export const metadata: Metadata = {
       "مستر خالد مرسي - مدرس معتمد من جامعة Cambridge البريطانية بخبرة 26 سنة في تدريس اللغة الإنجليزية.",
     locale: "ar_EG",
     type: "website",
+    url: process.env.NEXTAUTH_URL || "http://localhost:3000",
     images: [
       {
-        url: "/images/og-banner.png",
+        url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/images/og-banner.jpg`,
         width: 1200,
         height: 630,
         alt: "مستر خالد مرسي - مدرس لغة إنجليزية معتمد من Cambridge",
@@ -49,7 +50,9 @@ export const metadata: Metadata = {
     title: "مستر خالد مرسي | مدرس لغة إنجليزية معتمد من Cambridge",
     description:
       "مستر خالد مرسي - مدرس معتمد من جامعة Cambridge البريطانية بخبرة 26 سنة في تدريس اللغة الإنجليزية.",
-    images: ["/images/og-banner.png"],
+    images: [
+      `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/images/og-banner.jpg`,
+    ],
   },
 };
 
