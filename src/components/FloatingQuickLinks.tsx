@@ -27,7 +27,7 @@ export default function FloatingQuickLinks() {
     },
     {
       id: "pronunciation",
-      href: "/pronunciation",
+      href: "https://sema3ny.vercel.app/",
       icon: (
         <svg
           className="w-6 h-6"
@@ -84,6 +84,10 @@ export default function FloatingQuickLinks() {
             <div key={link.id} className="group relative">
               <Link
                 href={link.href}
+                {...(link.id === "pronunciation" && {
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                })}
                 className="w-12 h-12 flex items-center justify-center rounded-xl text-white hover:shadow-lg hover:scale-110 transition-all duration-300"
                 style={{
                   background: `linear-gradient(to bottom right, ${link.color}, ${link.color}dd)`,

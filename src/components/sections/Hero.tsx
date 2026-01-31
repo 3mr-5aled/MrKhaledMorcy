@@ -16,25 +16,19 @@ export default function Hero() {
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Profile Image */}
           <div className="relative animate-float">
-            <div className="w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 relative">
-              {/* Decorative ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#1B9AAA] via-[#06D6A0] to-[#FFC43D] p-1">
-                <div className="w-full h-full rounded-full bg-white p-2">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                    <Image
-                      src="/images/profile.jpg"
-                      alt="مستر خالد مرسي"
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  </div>
-                </div>
-              </div>
+            <div className="w-96 h-96 sm:w-[450px] sm:h-[450px] lg:w-[550px] lg:h-[550px] relative">
+              <Image
+                src="/images/profile-picture.png"
+                alt="مستر خالد مرسي"
+                fill
+                sizes="(max-width: 640px) 384px, (max-width: 1024px) 450px, 550px"
+                className="object-contain"
+                priority
+              />
               {/* Badge */}
-              <div className="absolute -bottom-2 right-4 bg-white rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
+              <div className="absolute bottom-8 right-8 bg-white rounded-full px-6 py-3 shadow-xl flex items-center gap-3 z-10">
                 <div className="w-3 h-3 bg-[#06D6A0] rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold text-gray-700">
+                <span className="text-base font-semibold text-gray-700">
                   26 سنة خبرة
                 </span>
               </div>
