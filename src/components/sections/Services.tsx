@@ -98,7 +98,7 @@ export default function Services() {
           {services.map((service, index) => (
             <div
               key={index}
-              className={`relative bg-gradient-to-br ${service.bgGradient} rounded-3xl p-8 border border-gray-100 hover:shadow-2xl transition-all duration-500 card-hover group`}
+              className={`relative bg-gradient-to-br ${service.bgGradient} rounded-3xl p-8 border border-gray-100 hover:shadow-2xl transition-all duration-500 card-hover group overflow-hidden`}
             >
               {/* Icon */}
               <div
@@ -148,7 +148,7 @@ export default function Services() {
 
               {/* Decorative element */}
               <div
-                className="absolute top-4 left-4 w-20 h-20 rounded-full opacity-10"
+                className="absolute -top-10 -left-10 w-32 h-32 rounded-full opacity-10 transition-all duration-500 group-hover:scale-150 group-hover:opacity-20"
                 style={{ backgroundColor: service.color }}
               ></div>
             </div>

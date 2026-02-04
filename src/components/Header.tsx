@@ -6,13 +6,77 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navLinks = [
-  { href: "#hero", label: "الرئيسية" },
-  { href: "#about", label: "من أنا" },
-  { href: "#services", label: "الخدمات" },
-  { href: "#achievements", label: "الشهادات" },
-  { href: "#feedback", label: "آراء الطلاب" },
-  { href: "#schedule", label: "المواعيد" },
-  { href: "#contact", label: "تواصل معنا" },
+  { href: "/#hero", label: "الرئيسية" },
+  { href: "/#about", label: "من أنا" },
+  { href: "/#services", label: "الخدمات" },
+  { href: "/#feedback", label: "آراء الطلاب" },
+  { href: "/#best-students", label: "لوحة الشرف" },
+  { href: "/#schedule", label: "المواعيد" },
+  { href: "/#contact", label: "تواصل معنا" },
+];
+
+const quickLinks = [
+  {
+    href: "/quizzes",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        />
+      </svg>
+    ),
+    label: "الاختبارات",
+    color: "#1B9AAA",
+  },
+  {
+    href: "https://sema3ny.vercel.app/",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+        />
+      </svg>
+    ),
+    label: "نطق الكلمات",
+    color: "#06D6A0",
+    external: true,
+  },
+  {
+    href: "/answers",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+        />
+      </svg>
+    ),
+    label: "اجابات الكتب",
+    color: "#EF476F",
+  },
 ];
 
 export default function Header() {
@@ -136,6 +200,34 @@ export default function Header() {
                   {link.label}
                 </a>
               ))}
+
+              {/* Quick Links Section */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm font-bold text-gray-700 px-4 mb-3">
+                  الروابط السريعة
+                </p>
+                <div className="flex flex-col gap-2">
+                  {quickLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      {...(link.external && {
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                      })}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="px-4 py-3 rounded-xl text-white font-medium hover:shadow-lg hover:scale-[1.02] transition-all duration-300 flex items-center gap-3"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${link.color}, ${link.color}dd)`,
+                      }}
+                    >
+                      {link.icon}
+                      <span>{link.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
               <a
                 href="https://wa.me/201023144722"
                 target="_blank"
