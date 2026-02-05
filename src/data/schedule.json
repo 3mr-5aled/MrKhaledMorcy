@@ -7,60 +7,42 @@
         "gradeKey": "prep-1",
         "sessions": [
           {
-            "center": "سنتر ECL",
-            "hall": "قاعة اللؤلؤة",
-            "day": "السبت",
-            "time": "10:00 ص",
-            "location": ""
-          },
-          {
-            "center": "سنتر النور",
-            "hall": "قاعة 3",
-            "day": "الثلاثاء",
-            "time": "4:00 م",
-            "location": ""
+            "center": "سنتر طومان باي",
+            "day": "الأربعاء",
+            "time": "2:00 مساءا - 4:00 مساءا",
+            "location": "https://goo.gl/maps/EikmZTmzmCzsLesN8"
           }
         ]
       },
       {
         "id": 2,
-        "grade": "تانية إعدادي",
+        "grade": "ثانية إعدادي",
         "gradeKey": "prep-2",
         "sessions": [
           {
-            "center": "سنتر ECL",
-            "hall": "قاعة اللؤلؤة",
-            "day": "السبت",
-            "time": "12:00 م",
-            "location": ""
-          },
-          {
-            "center": "سنتر الأمل",
-            "hall": "قاعة A",
-            "day": "الأربعاء",
-            "time": "5:00 م",
-            "location": ""
+            "center": "سنتر طومان باي",
+            "day": "الأحد",
+            "time": "2:00 مساءا - 4:00 مساءا",
+            "location": "https://goo.gl/maps/EikmZTmzmCzsLesN8"
           }
         ]
       },
       {
         "id": 3,
-        "grade": "تالتة إعدادي",
+        "grade": "ثالثة إعدادي",
         "gradeKey": "prep-3",
         "sessions": [
           {
-            "center": "سنتر ECL",
-            "hall": "قاعة اللؤلؤة",
-            "day": "السبت",
-            "time": "2:00 م",
-            "location": ""
+            "center": "سنتر طومان باي",
+            "day": "الأحد",
+            "time": "12:00 مساءا - 2:00 مساءا",
+            "location": "https://goo.gl/maps/EikmZTmzmCzsLesN8"
           },
           {
-            "center": "سنتر المستقبل",
-            "hall": "قاعة 1",
-            "day": "الخميس",
-            "time": "6:00 م",
-            "location": ""
+            "center": "سنتر ECL",
+            "day": "الأربعاء",
+            "time": "12:00 مساءا - 2:00 مساءا",
+            "location": "https://maps.app.goo.gl/g49otjgSBiy5Z5eq8?g_st=aw"
           }
         ]
       }
@@ -72,67 +54,60 @@
         "gradeKey": "sec-1",
         "sessions": [
           {
-            "center": "سنتر ECL",
-            "hall": "قاعة الماسة",
-            "day": "الأحد",
-            "time": "10:00 ص",
-            "location": ""
+            "center": "سنتر طومان باي",
+            "day": "السبت",
+            "time": "11:00 صباحا - 1:00 مساءا",
+            "location": "https://goo.gl/maps/EikmZTmzmCzsLesN8"
           },
           {
-            "center": "سنتر العلم",
-            "hall": "قاعة B",
-            "day": "الاثنين",
-            "time": "3:00 م",
-            "location": ""
+            "center": "سنتر ECL",
+            "day": "الثلاثاء",
+            "time": "6:00 مساءا - 8:00 مساءا",
+            "location": "https://maps.app.goo.gl/g49otjgSBiy5Z5eq8?g_st=aw"
+          },
+          {
+            "center": "سنتر Target",
+            "day": "الخميس",
+            "time": "12:00 مساءا - 2:00 مساءا",
+            "location": "https://maps.app.goo.gl/AWbVG7KWX5w4XRFr9?g_st=aw"
           }
         ]
       },
       {
         "id": 5,
-        "grade": "تانية ثانوي",
+        "grade": "ثانية ثانوي",
         "gradeKey": "sec-2",
         "sessions": [
           {
-            "center": "سنتر ECL",
-            "hall": "قاعة الماسة",
-            "day": "الأحد",
-            "time": "12:00 م",
-            "location": ""
+            "center": "سنتر طومان باي",
+            "day": "السبت",
+            "time": "1:00 مساءا - 3:00 مساءا",
+            "location": "https://goo.gl/maps/EikmZTmzmCzsLesN8"
           },
           {
-            "center": "سنتر التفوق",
-            "hall": "قاعة 2",
-            "day": "الثلاثاء",
-            "time": "6:00 م",
-            "location": ""
+            "center": "Online",
+            "day": "السبت",
+            "time": "9:00 مساءا - 11:00 مساءا",
+            "location": "https://wa.me/201023144722"
           }
         ]
       },
       {
         "id": 6,
-        "grade": "تالتة ثانوي",
+        "grade": "ثالثة ثانوي",
         "gradeKey": "sec-3",
         "sessions": [
           {
-            "center": "سنتر ECL",
-            "hall": "قاعة الماسة",
-            "day": "الأحد",
-            "time": "2:00 م",
-            "location": ""
+            "center": "سنتر طومان باي",
+            "day": "السبت",
+            "time": "3:00 مساءا - 6:00 مساءا",
+            "location": "https://goo.gl/maps/EikmZTmzmCzsLesN8"
           },
           {
-            "center": "سنتر النجاح",
-            "hall": "قاعة VIP",
-            "day": "الجمعة",
-            "time": "4:00 م",
-            "location": ""
-          },
-          {
-            "center": "سنتر الإبداع",
-            "hall": "قاعة 5",
-            "day": "الأربعاء",
-            "time": "7:00 م",
-            "location": ""
+            "center": "Online",
+            "day": "الإثنين",
+            "time": "2:00 مساءا - 5:00 مساءا",
+            "location": "https://wa.me/201023144722"
           }
         ]
       }
