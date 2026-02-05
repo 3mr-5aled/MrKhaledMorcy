@@ -140,52 +140,83 @@ export default function Contact() {
             </a>
           </div>
 
-          {/* Map Placeholder */}
-          <div className="bg-gray-100 rounded-3xl overflow-hidden min-h-[400px] relative">
-            {/* Placeholder for Google Maps */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-20 h-20 rounded-full bg-[#1B9AAA]/10 flex items-center justify-center mb-4">
-                <svg
-                  className="w-10 h-10 text-[#1B9AAA]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+          {/* Contact Notes */}
+          <div className="space-y-6">
+            {/* Operating Hours Card */}
+            <div className="bg-gradient-to-br from-[#EF476F] to-[#d63a5f] rounded-3xl p-8 text-white">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-2">أوقات العمل</h3>
+                  <p className="text-white/90 text-lg">
+                    متاحون للرد على استفساراتك
+                  </p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                موقع السنتر
-              </h3>
-              <p className="text-gray-600 mb-4">
-                سيتم إضافة خريطة Google Maps قريباً
-              </p>
-              <span className="px-4 py-2 bg-[#1B9AAA]/10 text-[#1B9AAA] rounded-full text-sm font-semibold">
-                سنتر ECL - قاعة اللؤلؤة
-              </span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-4">
+                  <svg
+                    className="w-6 h-6 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <div>
+                    <p className="font-semibold text-lg">
+                      من 10 مساءً إلى 12 ظهراً
+                    </p>
+                    <p className="text-white/80 text-sm">يومياً طوال الأسبوع</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Uncomment and add your Google Maps embed when you have the location */}
-            {/* <iframe
-              src="YOUR_GOOGLE_MAPS_EMBED_URL"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe> */}
+            {/* Note Card */}
+            <div className="bg-gradient-to-br from-[#118AB2] to-[#0e7090] rounded-3xl p-8 text-white">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <svg
+                    className="w-8 h-8"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold mb-2">ملاحظة مهمة</h3>
+                  <p className="text-white/90 text-lg leading-relaxed">
+                    يفضل التواصل عبر واتساب للرد الأسرع. نستقبل استفساراتكم
+                    وحجوزاتكم في أي وقت!
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
