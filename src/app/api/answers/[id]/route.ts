@@ -10,11 +10,13 @@ import { z } from "zod";
 const answerSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
-  type: z.enum(["PDF", "IMAGE", "YOUTUBE", "DRIVE"]).optional(),
+  type: z
+    .enum(["PDF", "IMAGE", "YOUTUBE", "DRIVE", "EXTERNAL_LINK"])
+    .optional(),
   url: z.string().optional(),
   images: z.array(z.string()).optional(),
   thumbnails: z.array(z.string()).optional(),
-  driveUrl: z.string().optional().nullable(),
+  externalUrl: z.string().optional().nullable(),
   lessonId: z.string().optional().nullable(),
   unitId: z.string().optional().nullable(),
   gradeId: z.string().optional().nullable(),
@@ -90,7 +92,7 @@ export async function PUT(
       lessonId: body.lessonId === "" ? null : body.lessonId,
       unitId: body.unitId === "" ? null : body.unitId,
       gradeId: body.gradeId === "" ? null : body.gradeId,
-      driveUrl: body.driveUrl === "" ? null : body.driveUrl,
+      externalUrl: body.externalUrl === "" ? null : body.externalUrl,
       customTitle: body.customTitle === "" ? null : body.customTitle,
       description: body.description === "" ? null : body.description,
     };

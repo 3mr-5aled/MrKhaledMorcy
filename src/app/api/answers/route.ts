@@ -10,12 +10,12 @@ const answerSchema = z
   .object({
     title: z.string().min(1, "العنوان مطلوب"),
     description: z.string().optional().nullable(),
-    type: z.enum(["PDF", "IMAGE", "YOUTUBE", "DRIVE"], {
+    type: z.enum(["PDF", "IMAGE", "YOUTUBE", "DRIVE", "EXTERNAL_LINK"], {
       message: "نوع الإجابة غير صالح",
     }),
     url: z.string().optional().default(""),
     images: z.array(z.string()).optional().default([]),
-    driveUrl: z.string().optional().nullable(),
+    externalUrl: z.string().optional().nullable(),
     lessonId: z.string().min(1, "الدرس مطلوب").optional().nullable(),
     unitId: z.string().optional().nullable(),
     gradeId: z.string().optional().nullable(),
@@ -31,9 +31,9 @@ const answerSchema = z
   })
   .refine(
     (data) => {
-      // For DRIVE type, driveUrl is required
-      if (data.type === "DRIVE") {
-        return data.driveUrl && data.driveUrl.length > 0;
+      // For EXTERNAL_LINK or DRIVE type, externalUrl is required
+      if (data.type === "EXTERNAL_LINK" || data.type === "DRIVE") {
+        return data.externalUrl && data.externalUrl.length > 0;
       }
       // For IMAGE type, either url or images array must have content
       if (data.type === "IMAGE") {
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
       lessonId: body.lessonId === "" ? null : body.lessonId,
       unitId: body.unitId === "" ? null : body.unitId,
       gradeId: body.gradeId === "" ? null : body.gradeId,
-      driveUrl: body.driveUrl === "" ? null : body.driveUrl,
+      externalUrl: body.externalUrl === "" ? null : body.externalUrl,
       customTitle: body.customTitle === "" ? null : body.customTitle,
       description: body.description === "" ? null : body.description,
     };

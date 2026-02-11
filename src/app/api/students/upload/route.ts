@@ -30,12 +30,6 @@ export async function POST(request: Request) {
       process.env.VERCEL === "1" ||
       !!process.env.AWS_LAMBDA_FUNCTION_NAME; // Generic serverless check
 
-    console.log("Environment detection:", {
-      NODE_ENV: process.env.NODE_ENV,
-      NETLIFY: process.env.NETLIFY,
-      isProduction,
-    });
-
     // SECURITY: Require authentication for file uploads
     const session = (await getServerSession(authOptions)) as any;
     if (!session?.user?.id) {
@@ -86,23 +80,12 @@ export async function POST(request: Request) {
     if (isProduction) {
       // === PRODUCTION: Use Supabase Storage ===
       try {
-        console.log("Starting Supabase upload process...");
-        console.log("Environment check:", {
-          hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-          hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-          hasPublishableKey:
-            !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY,
-        });
-
         const supabase = getSupabaseClient();
         const storagePath = studentId
           ? `students/${studentId}`
           : "students/temp";
 
-        console.log(`Using storage path: ${storagePath}`);
-
         // Optimize image using Sharp in memory
-        console.log("Optimizing image with Sharp...");
         const optimizedBuffer = await sharp(buffer)
           .webp({ quality: 85 })
           .toBuffer();
@@ -113,15 +96,8 @@ export async function POST(request: Request) {
           .webp({ quality: 80 })
           .toBuffer();
 
-        console.log(
-          `Optimized sizes - Original: ${buffer.length}, Optimized: ${optimizedBuffer.length}, Thumbnail: ${thumbnailBuffer.length}`,
-        );
-
         // Upload optimized image to Supabase
         const optimizedFileName = `${baseName}.webp`;
-        console.log(
-          `Uploading optimized image: ${storagePath}/${optimizedFileName}`,
-        );
 
         const { data: optimizedData, error: optimizedError } =
           await supabase.storage
@@ -138,11 +114,8 @@ export async function POST(request: Request) {
           );
         }
 
-        console.log("Optimized image uploaded successfully:", optimizedData);
-
         // Upload thumbnail to Supabase
         const thumbnailFileName = `${baseName}-thumb.webp`;
-        console.log(`Uploading thumbnail: ${storagePath}/${thumbnailFileName}`);
 
         const { data: thumbnailData, error: thumbnailError } =
           await supabase.storage
@@ -162,8 +135,6 @@ export async function POST(request: Request) {
             `Failed to upload thumbnail: ${thumbnailError.message}`,
           );
         }
-
-        console.log("Thumbnail uploaded successfully:", thumbnailData);
 
         // Get public URLs
         const optimizedUrl = getSupabasePublicUrl(

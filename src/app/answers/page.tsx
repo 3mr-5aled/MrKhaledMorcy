@@ -252,7 +252,7 @@ function AnswersContent() {
                     .map((answer: any) => (
                       <div
                         key={answer.id}
-                        className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
+                        className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col"
                       >
                         <h3 className="text-lg font-bold text-gray-900 mb-2">
                           {answer.title}
@@ -263,7 +263,7 @@ function AnswersContent() {
                           </p>
                         )}
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 flex-1 justify-center">
                           {answer.type === "PDF" && (
                             <a
                               href={answer.url}
@@ -288,53 +288,59 @@ function AnswersContent() {
                             </a>
                           )}
 
-                          {answer.type === "DRIVE" && answer.driveUrl && (
-                            <a
-                              href={answer.driveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white px-4 py-2 rounded-xl font-semibold hover:shadow-lg transition-all justify-center"
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                          {/* Backward compatible: supports both DRIVE (old) and EXTERNAL_LINK (new) types */}
+                          {(answer.type === "EXTERNAL_LINK" ||
+                            answer.type === "DRIVE") &&
+                            answer.externalUrl && (
+                              <a
+                                href={answer.externalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white px-4 py-2 rounded-xl font-semibold hover:shadow-lg transition-all justify-center"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                                />
-                              </svg>
-                              فتح Google Drive
-                            </a>
-                          )}
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                                فتح الرابط
+                              </a>
+                            )}
 
-                          {answer.driveUrl && answer.type !== "DRIVE" && (
-                            <a
-                              href={answer.driveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white px-4 py-2 rounded-xl font-semibold hover:shadow-lg transition-all justify-center"
-                            >
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                          {/* Supplementary external link for other types */}
+                          {answer.externalUrl &&
+                            answer.type !== "EXTERNAL_LINK" &&
+                            answer.type !== "DRIVE" && (
+                              <a
+                                href={answer.externalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white px-4 py-2 rounded-xl font-semibold hover:shadow-lg transition-all justify-center"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                                />
-                              </svg>
-                              فتح Google Drive
-                            </a>
-                          )}
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                                رابط خارجي
+                              </a>
+                            )}
                         </div>
 
                         {answer.type === "IMAGE" && (

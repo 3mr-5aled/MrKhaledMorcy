@@ -93,7 +93,7 @@ model Answer {
   url          String        // File path or YouTube URL (single file for PDF/YouTube)
   images       String[]      // Array of image paths (for IMAGE type only)
   thumbnails   String[]      @default([]) // Array of thumbnail paths (for IMAGE type only)
-  driveUrl     String?       // Google Drive file or folder URL
+  externalUrl  String?       // External URL for any external link
   lessonId     String?
   lesson       Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   unitId       String?       // Direct unit reference for unit-level answers
@@ -117,7 +117,8 @@ enum AnswerType {
   PDF
   IMAGE
   YOUTUBE
-  DRIVE
+  DRIVE           // Legacy - kept for database compatibility (cannot be removed from PostgreSQL enum)
+  EXTERNAL_LINK   // Current - use this for new external link answers
 }
 
 enum CategoryType {

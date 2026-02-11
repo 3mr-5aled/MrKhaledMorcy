@@ -37,11 +37,11 @@ export default function AdminAnswersPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    type: "PDF" as "PDF" | "IMAGE" | "YOUTUBE" | "DRIVE",
+    type: "PDF" as "PDF" | "IMAGE" | "YOUTUBE" | "EXTERNAL_LINK",
     url: "",
     images: [] as string[],
     thumbnails: [] as string[],
-    driveUrl: "",
+    externalUrl: "",
     lessonId: "",
     categoryType: "LESSON" as "LESSON" | "UNIT_EXERCISE" | "EXAM" | "OTHER",
     customTitle: "",
@@ -203,8 +203,8 @@ export default function AdminAnswersPage() {
       showToast.error("يرجى إدخال رابط YouTube");
       return;
     }
-    if (formData.type === "DRIVE" && !formData.driveUrl) {
-      showToast.error("يرجى إدخال رابط Google Drive");
+    if (formData.type === "EXTERNAL_LINK" && !formData.externalUrl) {
+      showToast.error("يرجى إدخال الرابط الخارجي");
       return;
     }
 
@@ -255,7 +255,7 @@ export default function AdminAnswersPage() {
       url: "",
       images: [],
       thumbnails: [],
-      driveUrl: "",
+      externalUrl: "",
       lessonId: "",
       categoryType: "LESSON",
       customTitle: "",
@@ -297,6 +297,8 @@ export default function AdminAnswersPage() {
       const unitsRes = await fetch(`/api/units?gradeId=${gradeId}`);
       const unitsData = await unitsRes.json();
       setUnits(unitsData);
+    } else {
+      setSelectedGrade("");
     }
 
     if (unitId) {
@@ -304,20 +306,22 @@ export default function AdminAnswersPage() {
       const lessonsRes = await fetch(`/api/lessons?unitId=${unitId}`);
       const lessonsData = await lessonsRes.json();
       setLessons(lessonsData);
+    } else {
+      setSelectedUnit("");
     }
 
     setFormData({
       title: answer.title,
       description: answer.description || "",
       type: answer.type,
-      url: answer.url,
+      url: answer.url || "",
       images: answer.images || [],
       thumbnails: answer.thumbnails || [],
-      driveUrl: answer.driveUrl || "",
+      externalUrl: answer.externalUrl || "",
       lessonId: answer.lessonId || "",
       categoryType: answer.categoryType,
       customTitle: answer.customTitle || "",
-      order: answer.order,
+      order: answer.order || 0,
       publishAt: answer.publishAt ? new Date(answer.publishAt) : null,
       status: answer.status || "DRAFT",
       isVisible: answer.isVisible !== undefined ? answer.isVisible : true,
@@ -550,7 +554,7 @@ export default function AdminAnswersPage() {
                   <option value="PDF">PDF</option>
                   <option value="IMAGE">صورة</option>
                   <option value="YOUTUBE">فيديو يوتيوب</option>
-                  <option value="DRIVE">Google Drive</option>
+                  <option value="EXTERNAL_LINK">رابط خارجي</option>
                 </select>
               </div>
 
@@ -586,7 +590,7 @@ export default function AdminAnswersPage() {
                     </div>
                   )}
                 </div>
-              ) : formData.type === "DRIVE" ? (
+              ) : formData.type === "EXTERNAL_LINK" ? (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     <div className="flex items-center gap-2">
@@ -600,24 +604,53 @@ export default function AdminAnswersPage() {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                         />
                       </svg>
-                      رابط Google Drive
+                      الرابط الخارجي
                     </div>
                   </label>
-                  <input
-                    type="url"
-                    value={formData.driveUrl || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, driveUrl: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none"
-                    placeholder="https://drive.google.com/..."
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type="url"
+                      value={formData.externalUrl || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          externalUrl: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none"
+                      placeholder="https://example.com/..."
+                      required
+                    />
+                    {formData.externalUrl && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData({ ...formData, externalUrl: "" })
+                        }
+                        className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                        title="مسح الرابط"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    أدخل رابط ملف أو مجلد Google Drive
+                    أدخل أي رابط خارجي
                   </p>
                 </div>
               ) : (
@@ -971,7 +1004,7 @@ export default function AdminAnswersPage() {
                 />
               </div>
 
-              {formData.type !== "DRIVE" && (
+              {formData.type !== "EXTERNAL_LINK" && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     <div className="flex items-center gap-2">
@@ -985,23 +1018,52 @@ export default function AdminAnswersPage() {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                         />
                       </svg>
-                      رابط Google Drive (اختياري)
+                      رابط خارجي إضافي (اختياري)
                     </div>
                   </label>
-                  <input
-                    type="url"
-                    value={formData.driveUrl || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, driveUrl: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none"
-                    placeholder="https://drive.google.com/..."
-                  />
+                  <div className="relative">
+                    <input
+                      type="url"
+                      value={formData.externalUrl || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          externalUrl: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none"
+                      placeholder="https://example.com/..."
+                    />
+                    {formData.externalUrl && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData({ ...formData, externalUrl: "" })
+                        }
+                        className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                        title="مسح الرابط"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    يمكنك إضافة رابط لملف أو مجلد على Google Drive كمرجع إضافي
+                    يمكنك إضافة رابط خارجي كمرجع إضافي
                   </p>
                 </div>
               )}
@@ -1266,7 +1328,7 @@ export default function AdminAnswersPage() {
               <option value="PDF">PDF</option>
               <option value="IMAGE">صورة</option>
               <option value="YOUTUBE">يوتيوب</option>
-              <option value="DRIVE">Google Drive</option>
+              <option value="EXTERNAL_LINK">رابط خارجي</option>
             </select>
           </div>
           <div>
@@ -1359,12 +1421,13 @@ export default function AdminAnswersPage() {
                             ? "bg-red-100 text-red-700"
                             : answer.type === "IMAGE"
                               ? "bg-blue-100 text-blue-700"
-                              : answer.type === "DRIVE"
+                              : answer.type === "EXTERNAL_LINK" ||
+                                  answer.type === "DRIVE"
                                 ? "bg-teal-100 text-teal-700"
                                 : "bg-purple-100 text-purple-700"
                         }`}
                       >
-                        {answer.type}
+                        {answer.type === "DRIVE" ? "LINK" : answer.type}
                         {answer.type === "IMAGE" &&
                           answer.images?.length > 0 && (
                             <span className="mr-1">
@@ -1516,13 +1579,13 @@ export default function AdminAnswersPage() {
                             </svg>
                           </button>
                         )}
-                        {answer.driveUrl && (
+                        {answer.externalUrl && (
                           <button
                             onClick={() =>
-                              window.open(answer.driveUrl, "_blank")
+                              window.open(answer.externalUrl, "_blank")
                             }
                             className="text-yellow-600 hover:text-yellow-800 p-1"
-                            title="فتح Google Drive"
+                            title="فتح الرابط الخارجي"
                           >
                             <svg
                               className="w-5 h-5"
@@ -1534,7 +1597,7 @@ export default function AdminAnswersPage() {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                               />
                             </svg>
                           </button>

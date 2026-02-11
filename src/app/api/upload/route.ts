@@ -115,10 +115,6 @@ export async function POST(request: Request) {
           optimizationResult.optimizedSize,
         );
 
-        console.log(
-          `Image optimized: ${file.name} - Size reduced by ${reduction}% (${optimizationResult.originalSize} → ${optimizationResult.optimizedSize} bytes)`,
-        );
-
         // Create File records for the optimized image and thumbnail
         await createFileRecord(
           optimizedWebPath,
