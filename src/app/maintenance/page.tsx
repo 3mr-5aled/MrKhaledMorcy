@@ -69,7 +69,7 @@ export default function MaintenancePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href="https://wa.me/201234567890"
+              href="https://wa.me/201023144722"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-success text-white rounded-lg font-semibold hover:bg-success/90 transition-all shadow hover:shadow-lg"

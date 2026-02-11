@@ -337,7 +337,7 @@ function QuizzesContent() {
                 استفسار، تواصل معنا عبر واتساب
               </p>
               <a
-                href="https://wa.me/201234567890"
+                href="https://wa.me/201023144722"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFC43D] to-[#EF476F] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all"
