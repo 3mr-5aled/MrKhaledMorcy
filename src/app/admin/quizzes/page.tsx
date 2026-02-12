@@ -25,6 +25,8 @@ export default function AdminQuizzesPage() {
     description: "",
     googleFormUrl: "",
     lessonId: "",
+    unitId: "",
+    gradeId: "",
     categoryType: "LESSON" as "LESSON" | "UNIT_EXERCISE" | "EXAM" | "OTHER",
     customTitle: "",
     duration: null as number | null,
@@ -72,7 +74,12 @@ export default function AdminQuizzesPage() {
   const handleGradeChange = async (gradeId: string) => {
     setSelectedGrade(gradeId);
     setSelectedUnit("");
-    setFormData({ ...formData, lessonId: "" });
+    setFormData({
+      ...formData,
+      lessonId: "",
+      unitId: "",
+      gradeId: gradeId || "",
+    });
 
     if (!gradeId) {
       setUnits([]);
@@ -92,7 +99,7 @@ export default function AdminQuizzesPage() {
 
   const handleUnitChange = async (unitId: string) => {
     setSelectedUnit(unitId);
-    setFormData({ ...formData, lessonId: "" });
+    setFormData({ ...formData, lessonId: "", unitId: unitId || "" });
 
     if (!unitId) {
       setLessons([]);
@@ -114,6 +121,8 @@ export default function AdminQuizzesPage() {
       description: "",
       googleFormUrl: "",
       lessonId: "",
+      unitId: "",
+      gradeId: "",
       categoryType: "LESSON",
       customTitle: "",
       duration: null,
@@ -151,9 +160,17 @@ export default function AdminQuizzesPage() {
       return;
     }
 
+    // Validate that at least lesson, unit, or grade is selected
+    if (!formData.lessonId && !formData.unitId && !formData.gradeId) {
+      showToast.error("يجب تحديد درس أو وحدة على الأقل");
+      return;
+    }
+
     const submitData = {
       ...formData,
       lessonId: formData.lessonId || null,
+      unitId: formData.unitId || null,
+      gradeId: formData.gradeId || null,
       customTitle:
         formData.categoryType === "OTHER" ? formData.customTitle : null,
       publishAt: formData.publishAt ? formData.publishAt.toISOString() : null,
@@ -190,8 +207,9 @@ export default function AdminQuizzesPage() {
   const handleEdit = async (quiz: any) => {
     setEditingQuiz(quiz);
 
-    // Load grade, unit, lessons if lesson is selected
+    // Load grade, unit, lessons based on quiz organization
     if (quiz.lessonId && quiz.lesson) {
+      // Lesson-level quiz: load from lesson -> unit -> grade
       const gradeId = quiz.lesson.unit.gradeId;
       const unitId = quiz.lesson.unitId;
 
@@ -204,6 +222,26 @@ export default function AdminQuizzesPage() {
       const lessonsRes = await fetch(`/api/lessons?unitId=${unitId}`);
       const lessonsData = await lessonsRes.json();
       setLessons(lessonsData);
+    } else if (quiz.unitId && quiz.unit) {
+      // Unit-level quiz: load from unit -> grade
+      const gradeId = quiz.unit.gradeId;
+      const unitId = quiz.unitId;
+
+      setSelectedGrade(gradeId);
+      const unitsRes = await fetch(`/api/units?gradeId=${gradeId}`);
+      const unitsData = await unitsRes.json();
+      setUnits(unitsData);
+
+      setSelectedUnit(unitId);
+      const lessonsRes = await fetch(`/api/lessons?unitId=${unitId}`);
+      const lessonsData = await lessonsRes.json();
+      setLessons(lessonsData);
+    } else if (quiz.gradeId && quiz.grade) {
+      // Grade-level quiz: just load grade
+      setSelectedGrade(quiz.gradeId);
+      const unitsRes = await fetch(`/api/units?gradeId=${quiz.gradeId}`);
+      const unitsData = await unitsRes.json();
+      setUnits(unitsData);
     }
 
     setFormData({
@@ -211,6 +249,8 @@ export default function AdminQuizzesPage() {
       description: quiz.description || "",
       googleFormUrl: quiz.googleFormUrl,
       lessonId: quiz.lessonId || "",
+      unitId: quiz.unitId || "",
+      gradeId: quiz.gradeId || "",
       categoryType: quiz.categoryType,
       customTitle: quiz.customTitle || "",
       duration: quiz.duration,
@@ -455,7 +495,11 @@ export default function AdminQuizzesPage() {
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {quiz.lesson
                         ? `${quiz.lesson.unit.grade.name} - ${quiz.lesson.unit.name}`
-                        : "-"}
+                        : quiz.unit
+                          ? `${quiz.unit.grade.name} - ${quiz.unit.name}`
+                          : quiz.grade
+                            ? quiz.grade.name
+                            : "-"}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">

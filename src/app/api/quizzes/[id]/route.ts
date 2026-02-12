@@ -11,6 +11,8 @@ const quizSchema = z.object({
   description: z.string().optional().nullable(),
   googleFormUrl: z.string().url().optional(),
   lessonId: z.string().optional().nullable(),
+  unitId: z.string().optional().nullable(),
+  gradeId: z.string().optional().nullable(),
   categoryType: z.enum(["LESSON", "UNIT_EXERCISE", "EXAM", "OTHER"]).optional(),
   customTitle: z.string().optional().nullable(),
   order: z.number().int().min(0).optional(),
@@ -38,6 +40,12 @@ export async function GET(
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 
@@ -84,6 +92,40 @@ export async function PUT(
       );
     }
 
+    // If lessonId is being updated, auto-derive unitId and gradeId from it
+    let unitId = validatedData.unitId;
+    let gradeId = validatedData.gradeId;
+
+    if (validatedData.lessonId !== undefined) {
+      if (validatedData.lessonId) {
+        const lesson = await db.lesson.findUnique({
+          where: { id: validatedData.lessonId },
+          include: {
+            unit: {
+              include: {
+                grade: true,
+              },
+            },
+          },
+        });
+
+        if (lesson) {
+          unitId = lesson.unitId;
+          gradeId = lesson.unit.gradeId;
+        }
+      } else {
+        // If lessonId is being cleared, keep existing unitId/gradeId unless explicitly overridden
+        unitId =
+          validatedData.unitId !== undefined
+            ? validatedData.unitId
+            : oldQuiz.unitId;
+        gradeId =
+          validatedData.gradeId !== undefined
+            ? validatedData.gradeId
+            : oldQuiz.gradeId;
+      }
+    }
+
     // Convert Egypt time to UTC for storage
     const publishAtUTC =
       validatedData.publishAt !== undefined
@@ -115,6 +157,8 @@ export async function PUT(
       where: { id },
       data: {
         ...validatedData,
+        ...(unitId !== undefined && { unitId }),
+        ...(gradeId !== undefined && { gradeId }),
         ...(publishAtUTC !== undefined && { publishAt: publishAtUTC }),
         ...(newStatus && { status: newStatus }),
       },
@@ -128,6 +172,12 @@ export async function PUT(
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 

@@ -45,6 +45,7 @@ model Grade {
   
   units     Unit[]
   answers   Answer[]
+  quizzes   Quiz[]
   students  Student[]
 
   @@map("grades")
@@ -63,6 +64,7 @@ model Unit {
   
   lessons   Lesson[]
   answers   Answer[]
+  quizzes   Quiz[]
 
   @@unique([gradeId, slug])
   @@map("units")
@@ -142,6 +144,10 @@ model Quiz {
   googleFormUrl   String        // Google Forms embed URL
   lessonId        String?
   lesson          Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  unitId          String?       // Direct unit reference for unit-level quizzes
+  unit            Unit?         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  gradeId         String?       // Direct grade reference for grade-level quizzes
+  grade           Grade?        @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   categoryType    CategoryType  // LESSON, UNIT_EXERCISE, EXAM, OTHER
   customTitle     String?       // For OTHER category type
   order           Int           @default(0)

@@ -6,24 +6,31 @@ import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-const quizSchema = z.object({
-  title: z.string().min(1, "العنوان مطلوب"),
-  description: z.string().optional(),
-  googleFormUrl: z
-    .string()
-    .url("يجب أن يكون رابط Google Form صالحًا")
-    .min(1, "رابط Google Form مطلوب"),
-  lessonId: z.string().min(1, "الدرس مطلوب").optional().nullable(),
-  categoryType: z.enum(["LESSON", "UNIT_EXERCISE", "EXAM", "OTHER"], {
-    message: "نوع الفئة غير صالح",
-  }),
-  customTitle: z.string().optional().nullable(),
-  order: z.number().int().min(0).default(0),
-  duration: z.number().int().min(0).optional().nullable(),
-  publishAt: z.string().datetime().optional().nullable(),
-  status: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED"]).optional(),
-  isVisible: z.boolean().default(true),
-});
+const quizSchema = z
+  .object({
+    title: z.string().min(1, "العنوان مطلوب"),
+    description: z.string().optional(),
+    googleFormUrl: z
+      .string()
+      .url("يجب أن يكون رابط Google Form صالحًا")
+      .min(1, "رابط Google Form مطلوب"),
+    lessonId: z.string().min(1).optional().nullable(),
+    unitId: z.string().optional().nullable(),
+    gradeId: z.string().optional().nullable(),
+    categoryType: z.enum(["LESSON", "UNIT_EXERCISE", "EXAM", "OTHER"], {
+      message: "نوع الفئة غير صالح",
+    }),
+    customTitle: z.string().optional().nullable(),
+    order: z.number().int().min(0).default(0),
+    duration: z.number().int().min(0).optional().nullable(),
+    publishAt: z.string().datetime().optional().nullable(),
+    status: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED"]).optional(),
+    isVisible: z.boolean().default(true),
+  })
+  .refine((data) => data.lessonId || data.unitId || data.gradeId, {
+    message: "يجب تحديد درس أو وحدة على الأقل",
+    path: ["lessonId"],
+  });
 
 export async function GET(request: Request) {
   try {
@@ -36,28 +43,32 @@ export async function GET(request: Request) {
     const gradeId = searchParams.get("gradeId");
     const categoryType = searchParams.get("categoryType");
 
+    // Build dynamic where clause to handle both direct and lesson-derived filtering
+    const where: any = {
+      ...(categoryType && { categoryType: categoryType as any }),
+      // Only show published/visible quizzes to non-admin users
+      ...(!isAdmin && {
+        isVisible: true,
+        status: "PUBLISHED",
+      }),
+    };
+
+    if (lessonId) {
+      where.lessonId = lessonId;
+    } else if (unitId) {
+      // Show quizzes that are either directly linked to this unit OR linked through a lesson in this unit
+      where.OR = [{ unitId }, { lesson: { unitId } }];
+    } else if (gradeId) {
+      // Show quizzes that are either directly linked to this grade OR linked through a unit/lesson in this grade
+      where.OR = [
+        { gradeId },
+        { unit: { gradeId } },
+        { lesson: { unit: { gradeId } } },
+      ];
+    }
+
     const quizzes = await db.quiz.findMany({
-      where: {
-        ...(lessonId && { lessonId }),
-        ...(categoryType && { categoryType: categoryType as any }),
-        ...(unitId && {
-          lesson: {
-            unitId,
-          },
-        }),
-        ...(gradeId && {
-          lesson: {
-            unit: {
-              gradeId,
-            },
-          },
-        }),
-        // Only show published/visible quizzes to non-admin users
-        ...(!isAdmin && {
-          isVisible: true,
-          status: "PUBLISHED",
-        }),
-      },
+      where,
       orderBy: { order: "asc" },
       include: {
         lesson: {
@@ -69,6 +80,12 @@ export async function GET(request: Request) {
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 
@@ -92,6 +109,28 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = quizSchema.parse(body);
 
+    // If lessonId is provided, auto-derive unitId and gradeId from it
+    let unitId = validatedData.unitId;
+    let gradeId = validatedData.gradeId;
+
+    if (validatedData.lessonId) {
+      const lesson = await db.lesson.findUnique({
+        where: { id: validatedData.lessonId },
+        include: {
+          unit: {
+            include: {
+              grade: true,
+            },
+          },
+        },
+      });
+
+      if (lesson) {
+        unitId = lesson.unitId;
+        gradeId = lesson.unit.gradeId;
+      }
+    }
+
     // Convert Egypt time to UTC for storage
     const publishAtUTC = validatedData.publishAt
       ? toUTC(validatedData.publishAt)
@@ -103,6 +142,8 @@ export async function POST(request: Request) {
     const quiz = await db.quiz.create({
       data: {
         ...validatedData,
+        unitId,
+        gradeId,
         publishAt: publishAtUTC,
         status: validatedData.status || autoStatus,
       },
@@ -116,6 +157,12 @@ export async function POST(request: Request) {
             },
           },
         },
+        unit: {
+          include: {
+            grade: true,
+          },
+        },
+        grade: true,
       },
     });
 
