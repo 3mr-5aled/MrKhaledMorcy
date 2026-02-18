@@ -49,7 +49,6 @@ export function RamadanDecoration() {
       glowColor="rgba(255, 179, 0, 0.45)"
       density="normal"
       locale="ar"
-      previewMode={true}
       confetti={true}
     />
   );
