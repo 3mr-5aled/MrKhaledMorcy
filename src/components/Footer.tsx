@@ -17,6 +17,7 @@ export default function Footer() {
                 width={80}
                 height={80}
                 className="object-contain"
+                suppressHydrationWarning
               />
               <div>
                 <h3 className="font-bold text-lg">مستر خالد مرسي</h3>

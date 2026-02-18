@@ -24,6 +24,7 @@ export default function Hero() {
                 sizes="(max-width: 640px) 384px, (max-width: 1024px) 450px, 550px"
                 className="object-contain"
                 priority
+                suppressHydrationWarning
               />
               {/* Badge */}
               <div className="absolute bottom-8 right-8 bg-white rounded-full px-6 py-3 shadow-xl flex items-center gap-3 z-10">

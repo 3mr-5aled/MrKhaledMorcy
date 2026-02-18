@@ -109,6 +109,7 @@ export default function Header() {
               height={80}
               className="object-contain"
               priority
+              suppressHydrationWarning
             />
             <span
               className={`font-bold text-lg hidden sm:block ${isScrolled ? "text-gray-900" : "text-gray-900"}`}
