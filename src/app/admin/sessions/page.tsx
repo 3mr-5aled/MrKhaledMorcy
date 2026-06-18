@@ -114,6 +114,9 @@ export default function AdminSessionsPage() {
   const [codeFilter, setCodeFilter] = useState<"all" | "redeemed" | "unused">("all");
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [isDeletingCodes, setIsDeletingCodes] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -363,6 +366,7 @@ export default function AdminSessionsPage() {
   const exportExcel = async () => {
     if (!selectedSession) return;
 
+    setIsExportingExcel(true);
     try {
       const response = await fetch(`/api/sessions/${selectedSession.id}/export`);
       const data = await response.json();
@@ -401,17 +405,24 @@ export default function AdminSessionsPage() {
       XLSX.writeFile(workbook, `${selectedSession.title}-codes.xlsx`);
     } catch (error) {
       showToast.error(getErrorMessage(error, "حدث خطأ أثناء التصدير"));
+    } finally {
+      setIsExportingExcel(false);
     }
   };
 
   const printCards = () => {
-    if (!selectedSession) return;
+    if (!selectedSession || isPrinting) return;
+    setIsPrinting(true);
     window.open(`/admin/sessions/${selectedSession.id}/print`, "_blank");
+    setTimeout(() => setIsPrinting(false), 1000);
   };
 
   const exportPdf = () => {
+    if (isExportingPdf) return;
+    setIsExportingPdf(true);
     printCards();
     showToast.success("استخدم أمر الطباعة واختر Save as PDF");
+    setTimeout(() => setIsExportingPdf(false), 1000);
   };
 
   return (
@@ -664,22 +675,28 @@ export default function AdminSessionsPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <button
+                    type="button"
                     onClick={printCards}
-                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50"
+                    disabled={isPrinting || isExportingExcel || isExportingPdf}
+                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                   >
-                    Print Cards
+                    {isPrinting ? "جاري..." : "Print Cards"}
                   </button>
                   <button
+                    type="button"
                     onClick={exportExcel}
-                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50"
+                    disabled={isPrinting || isExportingExcel || isExportingPdf}
+                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                   >
-                    Export Excel
+                    {isExportingExcel ? "جاري..." : "Export Excel"}
                   </button>
                   <button
+                    type="button"
                     onClick={exportPdf}
-                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50"
+                    disabled={isPrinting || isExportingExcel || isExportingPdf}
+                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                   >
-                    Export PDF
+                    {isExportingPdf ? "جاري..." : "Export PDF"}
                   </button>
                 </div>
               </div>
