@@ -47,6 +47,8 @@ model Grade {
   answers   Answer[]
   quizzes   Quiz[]
   students  Student[]
+  liveSessions LiveSession[]
+  sessionCodes SessionCode[]
 
   @@map("grades")
 }
@@ -202,6 +204,58 @@ model Student {
   @@map("students")
   @@index([gradeId])
   @@index([position])
+}
+
+// Live sessions for online English lessons and revisions
+model LiveSession {
+  id              String              @id @default(cuid())
+  title           String
+  description     String?             @db.Text
+  sessionLink     String
+  sessionDateTime DateTime
+  durationMinutes Int                 @default(120)
+  gradeId         String
+  grade           Grade               @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  codes           SessionCode[]
+  attendance      SessionAttendance[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("live_sessions")
+  @@index([gradeId])
+  @@index([sessionDateTime])
+}
+
+model SessionCode {
+  id           String              @id @default(cuid())
+  sessionId    String
+  session      LiveSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  gradeId      String
+  grade        Grade               @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  code         String              @unique
+  isRedeemed   Boolean             @default(false)
+  redeemedAt   DateTime?
+  attendance   SessionAttendance?
+  createdAt    DateTime            @default(now())
+
+  @@map("session_codes")
+  @@index([sessionId])
+  @@index([gradeId])
+  @@index([isRedeemed])
+  @@index([redeemedAt])
+}
+
+model SessionAttendance {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  codeId    String      @unique
+  code      SessionCode @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  enteredAt DateTime    @default(now())
+
+  @@map("session_attendance")
+  @@index([sessionId])
+  @@index([enteredAt])
 }
 
 enum StudentPosition {

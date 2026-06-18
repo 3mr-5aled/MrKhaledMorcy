@@ -13,6 +13,7 @@ export type EntityType =
   | "lesson"
   | "answer"
   | "quiz"
+  | "session"
   | "student"
   | "file";
 
@@ -22,7 +23,7 @@ interface LogActivityParams {
   entityId?: string;
   entityName: string;
   userId: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export async function logActivity({
@@ -79,6 +80,7 @@ export function getActivityMessage(
     lesson: "الدرس",
     answer: "الإجابة",
     quiz: "الاختبار",
+    session: "الحصة المباشرة",
     student: "الطالب",
     file: "الملف",
   };

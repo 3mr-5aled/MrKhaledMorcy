@@ -17,6 +17,7 @@ export default async function AdminDashboard() {
     lessonsCount,
     answersCount,
     quizzesCount,
+    sessionsCount,
     filesCount,
     recentActivities,
   ] = await Promise.all([
@@ -25,6 +26,7 @@ export default async function AdminDashboard() {
     db.lesson.count(),
     db.answer.count(),
     db.quiz.count(),
+    db.liveSession.count(),
     db.file.count({ where: { isActive: true } }),
     getRecentActivities(10),
   ]);
@@ -37,7 +39,7 @@ export default async function AdminDashboard() {
       />
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6 mb-8">
         <StatsCard
           title="المراحل الدراسية"
           value={gradesCount}
@@ -134,6 +136,26 @@ export default async function AdminDashboard() {
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
+            </svg>
+          }
+        />
+        <StatsCard
+          title="Sessions"
+          value={sessionsCount}
+          color="#F59E0B"
+          icon={
+            <svg
+              className="w-7 h-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
               />
             </svg>
           }
@@ -286,6 +308,31 @@ export default async function AdminDashboard() {
             <div>
               <h3 className="font-bold text-gray-900">إضافة اختبار</h3>
               <p className="text-sm text-gray-600">Google Forms اختبار</p>
+            </div>
+          </a>
+
+          <a
+            href="/admin/sessions"
+            className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-[#FFC43D]/10 to-[#F59E0B]/10 hover:shadow-md transition-all duration-300 group"
+          >
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#FFC43D] to-[#F59E0B] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900">إضافة حصة مباشرة</h3>
+              <p className="text-sm text-gray-600">Zoom أو رابط بث مباشر</p>
             </div>
           </a>
         </div>
