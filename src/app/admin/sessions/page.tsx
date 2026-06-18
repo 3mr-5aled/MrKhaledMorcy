@@ -21,6 +21,7 @@ type SessionAnalytics = {
 type LiveSession = {
   id: string;
   title: string;
+  slug?: string;
   description?: string | null;
   sessionLink?: string;
   sessionDateTime: string;
@@ -52,6 +53,7 @@ type ExportCodeRow = {
 
 const emptyForm = {
   title: "",
+  slug: "",
   description: "",
   sessionLink: "",
   sessionDateTime: "",
@@ -177,6 +179,7 @@ export default function AdminSessionsPage() {
     setEditingSession(session);
     setFormData({
       title: session.title,
+      slug: session.slug || "",
       description: session.description || "",
       sessionLink: session.sessionLink || "",
       sessionDateTime: formatForInput(session.sessionDateTime),
@@ -191,6 +194,11 @@ export default function AdminSessionsPage() {
 
     if (!formData.title.trim()) {
       showToast.error("عنوان الحصة مطلوب");
+      return;
+    }
+
+    if (!formData.slug.trim()) {
+      showToast.error("رمز الحصة (Slug) مطلوب");
       return;
     }
 
@@ -849,6 +857,25 @@ export default function AdminSessionsPage() {
                   }
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  رمز الحصة (Slug Prefix) *
+                </label>
+                <input
+                  type="text"
+                  value={formData.slug}
+                  placeholder="مثال: MIDTERM or REV1"
+                  onChange={(event) =>
+                    setFormData({ ...formData, slug: event.target.value.toUpperCase() })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none text-left"
+                  dir="ltr"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  الرمز ده هيتكتب في بداية الكود للطلاب بدلاً من رمز الصف.
+                </p>
               </div>
 
               <div>

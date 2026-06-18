@@ -70,14 +70,23 @@ export function getGradeCode(slug: string): string {
   );
 }
 
-export function generateCodeValue(gradeSlug: string, sessionId: string): string {
+export function generateCodeValue(
+  gradeSlug: string,
+  sessionId: string,
+  sessionSlug?: string | null,
+): string {
   let randomPart = "";
 
   for (let index = 0; index < 6; index += 1) {
     randomPart += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
   }
 
-  return `${getGradeCode(gradeSlug)}#${getSessionNumber(sessionId)}#${randomPart}`;
+  const prefix =
+    sessionSlug && sessionSlug !== "SESSION"
+      ? sessionSlug.toUpperCase().replace(/[^A-Z0-9]+/g, "").slice(0, 10)
+      : getGradeCode(gradeSlug);
+
+  return `${prefix}#${getSessionNumber(sessionId)}#${randomPart}`;
 }
 
 export function mapSessionForResponse<T extends {

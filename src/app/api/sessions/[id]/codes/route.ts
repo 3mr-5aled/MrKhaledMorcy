@@ -106,7 +106,11 @@ export async function POST(
 
     while (createdCodes.length < count && attempts < count * 20) {
       attempts += 1;
-      const code = generateCodeValue(liveSession.grade.slug, liveSession.id);
+      const code = generateCodeValue(
+        liveSession.grade.slug,
+        liveSession.id,
+        liveSession.slug,
+      );
 
       if (reserved.has(code)) continue;
 

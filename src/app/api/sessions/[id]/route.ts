@@ -9,6 +9,7 @@ import { z } from "zod";
 
 const sessionSchema = z.object({
   title: z.string().min(1).optional(),
+  slug: z.string().min(1).max(20).optional(),
   description: z.string().optional().nullable(),
   sessionLink: z.string().url().optional(),
   sessionDateTime: z.string().datetime().optional(),
@@ -103,6 +104,9 @@ export async function PUT(
       where: { id },
       data: {
         ...validatedData,
+        ...(validatedData.slug !== undefined && {
+          slug: validatedData.slug.trim().toUpperCase(),
+        }),
         ...(validatedData.description !== undefined && {
           description: validatedData.description || null,
         }),
