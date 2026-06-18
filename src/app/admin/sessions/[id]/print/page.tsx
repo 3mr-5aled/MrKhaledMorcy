@@ -83,6 +83,16 @@ export default function PrintSessionCodesPage() {
           margin: 10mm;
         }
 
+        /* Hide the sidebar and reset main layout padding when viewing print page */
+        @media screen, print {
+          aside {
+            display: none !important;
+          }
+          main {
+            padding: 0 !important;
+          }
+        }
+
         @media print {
           body {
             background: white !important;

@@ -129,7 +129,8 @@ function SessionsContent() {
               value={code}
               onChange={(event) => setCode(event.target.value.toUpperCase())}
               placeholder="اكتب الكود هنا"
-              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none text-left"
+              disabled={isLoading}
+              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none text-left disabled:opacity-50 disabled:cursor-not-allowed"
               dir="ltr"
             />
             <button

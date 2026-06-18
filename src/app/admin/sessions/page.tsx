@@ -106,6 +106,7 @@ export default function AdminSessionsPage() {
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCodesLoading, setIsCodesLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [filterGrade, setFilterGrade] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [customCodeCount, setCustomCodeCount] = useState(50);
@@ -276,6 +277,7 @@ export default function AdminSessionsPage() {
       return;
     }
 
+    setIsGenerating(true);
     try {
       const response = await fetch(`/api/sessions/${selectedSession.id}/codes`, {
         method: "POST",
@@ -294,6 +296,8 @@ export default function AdminSessionsPage() {
       fetchInitialData();
     } catch (error) {
       showToast.error(getErrorMessage(error, "حدث خطأ أثناء إنشاء الأكواد"));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -572,7 +576,8 @@ export default function AdminSessionsPage() {
                     <button
                       key={count}
                       onClick={() => generateCodes(count)}
-                      className="px-3 py-2 rounded-xl bg-[#1B9AAA]/10 text-[#1B9AAA] font-bold hover:bg-[#1B9AAA]/20"
+                      disabled={isGenerating || isCodesLoading}
+                      className="px-3 py-2 rounded-xl bg-[#1B9AAA]/10 text-[#1B9AAA] font-bold hover:bg-[#1B9AAA]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Generate {count}
                     </button>
@@ -587,13 +592,15 @@ export default function AdminSessionsPage() {
                     onChange={(event) =>
                       setCustomCodeCount(Number(event.target.value))
                     }
-                    className="min-w-0 flex-1 px-3 py-2 border border-gray-200 rounded-xl"
+                    disabled={isGenerating || isCodesLoading}
+                    className="min-w-0 flex-1 px-3 py-2 border border-gray-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     onClick={() => generateCodes(customCodeCount)}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white font-bold"
+                    disabled={isGenerating || isCodesLoading}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white font-bold disabled:opacity-60 disabled:cursor-not-allowed min-w-[100px] flex items-center justify-center"
                   >
-                    Generate
+                    {isGenerating ? "جاري..." : "Generate"}
                   </button>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
