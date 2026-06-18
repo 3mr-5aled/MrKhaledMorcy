@@ -109,7 +109,7 @@ export default function AdminSessionsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [filterGrade, setFilterGrade] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [customCodeCount, setCustomCodeCount] = useState(50);
+  const [customCodeCount, setCustomCodeCount] = useState(10);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [codeFilter, setCodeFilter] = useState<"all" | "redeemed" | "unused">("all");
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
@@ -631,7 +631,7 @@ export default function AdminSessionsPage() {
 
               <div className="space-y-3 mb-5">
                 <div className="grid grid-cols-3 gap-2">
-                  {[50, 100, 200].map((count) => (
+                  {[10, 20, 50].map((count) => (
                     <button
                       key={count}
                       onClick={() => generateCodes(count)}
