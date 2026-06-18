@@ -111,6 +111,9 @@ export default function AdminSessionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [customCodeCount, setCustomCodeCount] = useState(50);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [codeFilter, setCodeFilter] = useState<"all" | "redeemed" | "unused">("all");
+  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [isDeletingCodes, setIsDeletingCodes] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -128,6 +131,14 @@ export default function AdminSessionsPage() {
       return matchesGrade && matchesSearch;
     });
   }, [sessions, filterGrade, searchQuery]);
+
+  const filteredCodes = useMemo(() => {
+    return codes.filter((code) => {
+      if (codeFilter === "redeemed") return code.isRedeemed;
+      if (codeFilter === "unused") return !code.isRedeemed;
+      return true;
+    });
+  }, [codes, codeFilter]);
 
   const fetchInitialData = async () => {
     try {
@@ -253,6 +264,8 @@ export default function AdminSessionsPage() {
   const loadCodes = async (session: LiveSession) => {
     setSelectedSession(session);
     setIsCodesLoading(true);
+    setSelectedCodes([]);
+    setCodeFilter("all");
 
     try {
       const response = await fetch(`/api/sessions/${session.id}/codes`);
@@ -268,6 +281,52 @@ export default function AdminSessionsPage() {
       showToast.error(getErrorMessage(error, "حدث خطأ أثناء جلب الأكواد"));
     } finally {
       setIsCodesLoading(false);
+    }
+  };
+
+  const toggleSelectCode = (id: string) => {
+    setSelectedCodes((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  };
+
+  const toggleSelectAllCodes = () => {
+    const filteredIds = filteredCodes.map((item) => item.id);
+    const allSelected = filteredIds.every((id) => selectedCodes.includes(id));
+
+    if (allSelected) {
+      setSelectedCodes((prev) => prev.filter((id) => !filteredIds.includes(id)));
+    } else {
+      setSelectedCodes((prev) => Array.from(new Set([...prev, ...filteredIds])));
+    }
+  };
+
+  const deleteSelectedCodes = async () => {
+    if (selectedCodes.length === 0 || !selectedSession) return;
+    if (!window.confirm(`هل أنت متأكد من حذف ${selectedCodes.length} كود؟`)) return;
+
+    setIsDeletingCodes(true);
+    try {
+      const response = await fetch(`/api/sessions/${selectedSession.id}/codes`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codeIds: selectedCodes }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "حدث خطأ أثناء حذف الأكواد");
+      }
+
+      setCodes(data.codes);
+      setCodeAnalytics(data.analytics);
+      setSelectedCodes([]);
+      showToast.success("تم حذف الأكواد المحددة بنجاح");
+      fetchInitialData();
+    } catch (error) {
+      showToast.error(getErrorMessage(error, "حدث خطأ أثناء حذف الأكواد"));
+    } finally {
+      setIsDeletingCodes(false);
     }
   };
 
@@ -625,7 +684,72 @@ export default function AdminSessionsPage() {
                 </div>
               </div>
 
-              <div className="border border-gray-100 rounded-xl overflow-hidden max-h-[420px] overflow-y-auto">
+              {codes.length > 0 && (
+                <>
+                  <div className="flex gap-1 mb-3 border-b border-gray-100 pb-3">
+                    <button
+                      type="button"
+                      onClick={() => setCodeFilter("all")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        codeFilter === "all"
+                          ? "bg-[#1B9AAA] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      الكل ({codes.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCodeFilter("unused")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        codeFilter === "unused"
+                          ? "bg-[#1B9AAA] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      غير مستخدم ({codes.filter((c) => !c.isRedeemed).length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCodeFilter("redeemed")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                        codeFilter === "redeemed"
+                          ? "bg-[#1B9AAA] text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      مستخدم ({codes.filter((c) => c.isRedeemed).length})
+                    </button>
+                  </div>
+
+                  {filteredCodes.length > 0 && (
+                    <div className="flex items-center justify-between gap-3 mb-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                      <label className="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={filteredCodes.every((c) => selectedCodes.includes(c.id))}
+                          onChange={toggleSelectAllCodes}
+                          className="w-4 h-4 rounded border-gray-300 text-[#1B9AAA] focus:ring-[#1B9AAA]"
+                        />
+                        <span>تحديد الكل</span>
+                      </label>
+
+                      {selectedCodes.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={deleteSelectedCodes}
+                          disabled={isDeletingCodes}
+                          className="px-2.5 py-1.5 bg-[#EF476F] hover:bg-red-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all disabled:opacity-50"
+                        >
+                          {isDeletingCodes ? "جاري الحذف..." : `حذف المحدد (${selectedCodes.length})`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="border border-gray-100 rounded-xl overflow-hidden max-h-[350px] overflow-y-auto">
                 {isCodesLoading ? (
                   <div className="p-6 text-center text-gray-500">
                     جاري التحميل...
@@ -634,26 +758,43 @@ export default function AdminSessionsPage() {
                   <div className="p-6 text-center text-gray-500">
                     لم يتم إنشاء أكواد بعد
                   </div>
+                ) : filteredCodes.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500">
+                    لا توجد أكواد مطابقة للتصفية
+                  </div>
                 ) : (
-                  codes.map((code) => (
-                    <div
-                      key={code.id}
-                      className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0"
-                    >
-                      <span className="font-mono text-sm" dir="ltr">
-                        {code.code}
-                      </span>
-                      <span
-                        className={`text-xs font-bold px-2 py-1 rounded-full ${
-                          code.isRedeemed
-                            ? "bg-[#06D6A0]/10 text-[#047857]"
-                            : "bg-gray-100 text-gray-600"
+                  filteredCodes.map((code) => {
+                    const isSelected = selectedCodes.includes(code.id);
+                    return (
+                      <div
+                        key={code.id}
+                        className={`flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
+                          isSelected ? "bg-[#1B9AAA]/5" : ""
                         }`}
                       >
-                        {code.isRedeemed ? "مستخدم" : "غير مستخدم"}
-                      </span>
-                    </div>
-                  ))
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectCode(code.id)}
+                            className="w-4 h-4 rounded border-gray-300 text-[#1B9AAA] focus:ring-[#1B9AAA] cursor-pointer"
+                          />
+                          <span className="font-mono text-sm" dir="ltr">
+                            {code.code}
+                          </span>
+                        </div>
+                        <span
+                          className={`text-xs font-bold px-2 py-1 rounded-full ${
+                            code.isRedeemed
+                              ? "bg-[#06D6A0]/10 text-[#047857]"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {code.isRedeemed ? "مستخدم" : "غير مستخدم"}
+                        </span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>

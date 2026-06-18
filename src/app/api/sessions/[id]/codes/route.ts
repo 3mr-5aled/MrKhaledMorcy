@@ -147,3 +147,59 @@ export async function POST(
     );
   }
 }
+
+const deleteCodesSchema = z.object({
+  codeIds: z.array(z.string()).min(1),
+});
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+
+  try {
+    const session = (await getServerSession(authOptions)) as AuthSession;
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { codeIds } = deleteCodesSchema.parse(body);
+
+    const liveSession = await db.liveSession.findUnique({
+      where: { id },
+    });
+
+    if (!liveSession) {
+      return NextResponse.json(
+        { error: "الحصة المباشرة غير موجودة" },
+        { status: 404 },
+      );
+    }
+
+    await db.sessionCode.deleteMany({
+      where: {
+        id: { in: codeIds },
+        sessionId: id,
+      },
+    });
+
+    const payload = await getSessionCodesPayload(id);
+    return NextResponse.json(payload);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "بيانات غير صالحة", details: error.issues },
+        { status: 400 },
+      );
+    }
+
+    console.error("Error deleting session codes:", error);
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء حذف الأكواد" },
+      { status: 500 },
+    );
+  }
+}
+
