@@ -17,6 +17,26 @@ const navLinks = [
 
 const quickLinks = [
   {
+    href: "/sessions",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+        />
+      </svg>
+    ),
+    label: "الحصص المباشرة",
+    color: "#FFC43D",
+  },
+  {
     href: "/quizzes",
     icon: (
       <svg
@@ -131,13 +151,20 @@ export default function Header() {
                 {link.label}
               </a>
             ))}
-            {status === "authenticated" && (
+            {status === "authenticated" ? (
               <Link
                 href="/admin"
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white hover:shadow-lg`}
+                className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white hover:shadow-lg"
               >
                 لوحة التحكم
               </Link>
+            ) : (
+              <a
+                href="/#quick-links"
+                className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white hover:shadow-lg"
+              >
+                الروابط السريعة
+              </a>
             )}
           </div>
 
@@ -201,6 +228,24 @@ export default function Header() {
                   {link.label}
                 </a>
               ))}
+
+              {status === "authenticated" ? (
+                <Link
+                  href="/admin"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-4 py-3 rounded-xl text-white font-semibold hover:shadow-lg transition-all duration-300 text-center bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0]"
+                >
+                  لوحة التحكم
+                </Link>
+              ) : (
+                <a
+                  href="/#quick-links"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-4 py-3 rounded-xl text-white font-semibold hover:shadow-lg transition-all duration-300 text-center bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0]"
+                >
+                  الروابط السريعة
+                </a>
+              )}
 
               {/* Quick Links Section */}
               <div className="mt-4 pt-4 border-t border-gray-200">

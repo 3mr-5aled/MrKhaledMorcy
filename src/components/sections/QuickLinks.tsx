@@ -109,7 +109,7 @@ const quickLinks = [
 
 export default function QuickLinks() {
   return (
-    <section className="section-padding bg-gray-50">
+    <section id="quick-links" className="section-padding bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
