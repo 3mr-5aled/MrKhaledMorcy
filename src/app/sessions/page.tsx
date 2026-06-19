@@ -10,6 +10,7 @@ type RedeemedSession = {
   grade: string;
   formattedSessionDateTime: string;
   sessionLink: string | null;
+  whatsappLink?: string | null;
 };
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -176,6 +177,47 @@ function SessionsContent() {
                 </p>
               </div>
             </div>
+
+            {session.whatsappLink && (
+              <div className="mb-6 rounded-2xl border-2 border-[#25D366]/30 bg-[#25D366]/5 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-right">
+                  <div className="w-12 h-12 rounded-xl bg-[#25D366] flex items-center justify-center text-white shrink-0 shadow-md">
+                    <svg
+                      className="w-7 h-7"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.115-2.909-6.996-1.878-1.879-4.361-2.914-6.998-2.915-5.443 0-9.869 4.42-9.873 9.863-.001 1.705.452 3.37 1.31 4.8l-.348 1.272 1.32-.346zm11.3-3.486c-.274-.137-1.62-.8-1.87-.891-.252-.093-.437-.137-.62.137-.183.274-.707.891-.868 1.074-.16.183-.32.206-.594.069-.274-.137-1.158-.427-2.208-1.363-.817-.729-1.37-1.63-1.53-1.905-.16-.274-.017-.422.12-.558.124-.122.274-.32.411-.48.137-.16.183-.274.274-.457.09-.183.046-.343-.023-.48-.069-.137-.62-1.492-.85-2.043-.224-.54-.47-.466-.62-.474-.15-.008-.32-.01-.49-.01-.17 0-.447.064-.68.32-.233.256-.89.87-8.9 2.122 0 1.25.045 2.457.172 2.64.127.184.274.207.548.344zm0 0" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-base sm:text-lg">مجموعة الواتساب للمراجعة</h3>
+                    <p className="text-xs sm:text-sm text-gray-500">اشترك الآن في جروب الواتساب لمتابعة حصص المراجعة النهائية</p>
+                  </div>
+                </div>
+                <a
+                  href={session.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 bg-[#25D366] hover:bg-[#20ba56] text-white rounded-xl font-bold flex items-center gap-2 shadow-md transition-all whitespace-nowrap text-sm"
+                >
+                  <span>دخول الجروب</span>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    />
+                  </svg>
+                </a>
+              </div>
+            )}
 
             {session.sessionLink ? (
               <a

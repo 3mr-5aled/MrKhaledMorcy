@@ -12,6 +12,10 @@ const sessionSchema = z.object({
   slug: z.string().min(1, "رمز الحصة (Slug) مطلوب").max(20, "الرمز طويل جداً"),
   description: z.string().optional().nullable(),
   sessionLink: z.string().url("رابط الحصة غير صالح"),
+  whatsappLink: z.preprocess(
+    (value) => (value === "" ? null : value),
+    z.string().url("رابط مجموعة الواتساب غير صالح").optional().nullable(),
+  ),
   sessionDateTime: z.string().datetime("ميعاد الحصة غير صالح"),
   durationMinutes: z.number().int().min(1).max(600).default(120),
   gradeId: z.string().min(1, "الصف الدراسي مطلوب"),

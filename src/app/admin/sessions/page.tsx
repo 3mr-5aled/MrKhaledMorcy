@@ -24,6 +24,7 @@ type LiveSession = {
   slug?: string;
   description?: string | null;
   sessionLink?: string;
+  whatsappLink?: string | null;
   sessionDateTime: string;
   formattedSessionDateTime: string;
   durationMinutes: number;
@@ -56,6 +57,7 @@ const emptyForm = {
   slug: "",
   description: "",
   sessionLink: "",
+  whatsappLink: "",
   sessionDateTime: "",
   durationMinutes: 120,
   gradeId: "",
@@ -182,6 +184,7 @@ export default function AdminSessionsPage() {
       slug: session.slug || "",
       description: session.description || "",
       sessionLink: session.sessionLink || "",
+      whatsappLink: session.whatsappLink || "",
       sessionDateTime: formatForInput(session.sessionDateTime),
       durationMinutes: session.durationMinutes,
       gradeId: session.gradeId,
@@ -214,9 +217,19 @@ export default function AdminSessionsPage() {
       return;
     }
 
+    if (formData.whatsappLink && formData.whatsappLink.trim()) {
+      try {
+        new URL(formData.whatsappLink);
+      } catch {
+        showToast.error("رابط مجموعة الواتساب غير صالح");
+        return;
+      }
+    }
+
     const payload = {
       ...formData,
       description: formData.description || null,
+      whatsappLink: formData.whatsappLink || null,
       durationMinutes: Number(formData.durationMinutes),
       sessionDateTime: new Date(formData.sessionDateTime).toISOString(),
     };
@@ -910,6 +923,28 @@ export default function AdminSessionsPage() {
                   }
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  رابط مجموعة الواتساب (WhatsApp Group Link)
+                </label>
+                <input
+                  type="url"
+                  placeholder="مثال: https://chat.whatsapp.com/..."
+                  value={formData.whatsappLink}
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
+                      whatsappLink: event.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B9AAA] focus:border-transparent outline-none text-left"
+                  dir="ltr"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  الرابط ده هيظهر للطلاب فوراً بعد إدخال الكود (للاشتراك في مجموعة المراجعة).
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

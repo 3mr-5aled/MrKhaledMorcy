@@ -3,6 +3,8 @@
 import QRCode from "qrcode";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Printer, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 type PrintCode = {
   id: string;
@@ -44,8 +46,8 @@ export default function PrintSessionCodesPage() {
           const url = `${origin}/sessions?code=${encodeURIComponent(item.code)}`;
           const qr = await QRCode.toDataURL(url, {
             margin: 1,
-            width: 120,
-            errorCorrectionLevel: "M",
+            width: 150,
+            errorCorrectionLevel: "H",
           });
           return [item.code, qr] as const;
         }),
@@ -76,10 +78,10 @@ export default function PrintSessionCodesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 print:bg-white print:py-0">
-      <style jsx global>{`
+    <div className="min-h-screen bg-gray-50 py-8 print:bg-white print:py-0">
+      <style dangerouslySetInnerHTML={{ __html: `
         @page {
-          size: A4;
+          size: A4 portrait;
           margin: 10mm;
         }
 
@@ -96,6 +98,10 @@ export default function PrintSessionCodesPage() {
         @media print {
           body {
             background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
 
           .no-print {
@@ -105,63 +111,136 @@ export default function PrintSessionCodesPage() {
           .print-sheet {
             box-shadow: none !important;
             margin: 0 !important;
-            width: auto !important;
-            min-height: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            background: white !important;
+          }
+
+          .print-grid {
+            display: grid !important;
+            grid-template-columns: 90mm 90mm !important;
+            gap: 10mm !important;
+            justify-content: center !important;
+            align-content: start !important;
           }
 
           .code-card {
-            break-inside: avoid;
-            page-break-inside: avoid;
+            width: 90mm !important;
+            height: 55mm !important;
+            min-height: 55mm !important;
+            max-height: 55mm !important;
+            margin: 0 !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            border: 1px solid #e2e8f0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
-      `}</style>
+      `}} />
 
-      <div className="no-print max-w-5xl mx-auto px-4 mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Print Codes</h1>
-          <p className="text-gray-600">
-            {payload.session.title} - {payload.session.grade.name}
-          </p>
+      {/* Header toolbar on screen */}
+      <div className="no-print max-w-5xl mx-auto px-4 mb-6 mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm" dir="rtl">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/sessions"
+            className="p-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl transition-colors border border-gray-200"
+            title="العودة للحصص"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-extrabold text-gray-900 font-cairo">طباعة كروت الحضور</h1>
+            <p className="text-xs text-gray-500 font-bold mt-1 font-cairo">
+              {payload.session.title} &bull; {payload.session.grade.name}
+            </p>
+          </div>
         </div>
         <button
           onClick={() => window.print()}
-          className="px-6 py-3 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] text-white rounded-xl font-bold"
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] hover:shadow-lg transition-all cursor-pointer text-white rounded-xl font-extrabold font-cairo"
         >
-          Print Cards
+          <Printer className="w-5 h-5" />
+          طباعة الكروت
         </button>
       </div>
 
-      <main className="print-sheet max-w-5xl mx-auto bg-white p-6 shadow-sm">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 print:grid-cols-3 print:gap-3">
+      {/* Printable Sheet */}
+      <main className="print-sheet max-w-5xl mx-auto bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm print:border-none print:p-0">
+        <div className="print-grid grid grid-cols-1 sm:grid-cols-2 gap-4 print:grid-cols-2 print:gap-[10mm] print:justify-center">
           {payload.codes.map((item) => (
             <article
               key={item.id}
-              className="code-card border-2 border-dashed border-gray-300 rounded-lg p-4 min-h-[190px] flex flex-col items-center justify-between text-center"
+              className="code-card relative flex flex-row items-stretch justify-between p-4 bg-gradient-to-br from-white via-white to-gray-50/30 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden text-right select-none"
+              dir="rtl"
             >
-              <div>
-                <p className="text-sm font-bold text-gray-700">
-                  {payload.session.grade.name}
-                </p>
-                <h2 className="text-base font-bold text-gray-900 mt-1 line-clamp-2">
-                  {payload.session.title}
-                </h2>
+              {/* Brand Accent Side Bar */}
+              <div className="absolute right-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-[#1B9AAA] to-[#06D6A0]" />
+
+              {/* Right content area: info & code */}
+              <div className="flex flex-col justify-between flex-1 pr-3.5 min-w-0">
+                {/* Header branding */}
+                <div className="flex items-center gap-1.5">
+                  <div className="w-[26px] h-[26px] rounded-md bg-white p-0.5 flex items-center justify-center border border-gray-200 shadow-sm flex-shrink-0">
+                    <img
+                      src="/images/logo.png"
+                      alt="Logo"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-extrabold text-[#1B9AAA] text-[10px] leading-none truncate font-cairo">مستر خالد مرسي</span>
+                    <span className="text-[7.5px] text-[#06D6A0] font-black leading-none uppercase tracking-wide font-cairo">English Academy</span>
+                  </div>
+                </div>
+
+                {/* Session detail & badges */}
+                <div className="flex flex-col justify-center min-w-0 my-1.5">
+                  <h2 className="text-[11px] font-black text-gray-800 line-clamp-2 leading-tight tracking-normal mb-1 font-cairo">
+                    {payload.session.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-1 items-center">
+                    <span className="inline-block text-[8px] font-bold text-[#1B9AAA] bg-[#1B9AAA]/10 px-1.5 py-0.5 rounded">
+                      {payload.session.grade.name}
+                    </span>
+                    <span className="inline-block text-[8px] font-bold text-[#06D6A0] bg-[#06D6A0]/10 px-1.5 py-0.5 rounded">
+                      حصة تفاعلية
+                    </span>
+                  </div>
+                </div>
+
+                {/* Activation code */}
+                <div>
+                  <div className="text-[8px] text-[#475569] font-bold mb-0.5 font-cairo">كود تفعيل الحصة:</div>
+                  <code className="font-mono text-xs font-black text-gray-900 bg-gray-50 border border-gray-200 rounded-md px-2 py-0.5 tracking-wider select-all inline-block" dir="ltr">
+                    {item.code}
+                  </code>
+                </div>
               </div>
 
-              {qrCodes[item.code] && (
-                <img
-                  src={qrCodes[item.code]}
-                  alt={item.code}
-                  className="w-24 h-24"
-                />
-              )}
-
-              <div>
-                <p className="font-mono text-lg font-bold text-gray-900" dir="ltr">
-                  {item.code}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Scan QR or enter code
-                </p>
+              {/* Left content area: QR Code & logo */}
+              <div className="flex flex-col items-center justify-center gap-1 flex-shrink-0">
+                <div className="relative w-[75px] h-[75px] bg-white p-1 rounded-xl shadow-sm border border-gray-200 flex items-center justify-center">
+                  {qrCodes[item.code] && (
+                    <img
+                      src={qrCodes[item.code]}
+                      alt={item.code}
+                      className="w-full h-full"
+                    />
+                  )}
+                  {/* Central QR Code Logo Overlay */}
+                  <div className="absolute inset-0 m-auto w-[20px] h-[20px] bg-white rounded-full p-0.5 shadow-md flex items-center justify-center border border-gray-100">
+                    <img
+                      src="/images/logo.png"
+                      alt="Logo"
+                      className="w-full h-full object-contain rounded-full"
+                    />
+                  </div>
+                </div>
+                <span className="text-[7.5px] text-[#64748b] font-extrabold text-center font-cairo">
+                  امسح الكود للتسجيل السريع
+                </span>
               </div>
             </article>
           ))}

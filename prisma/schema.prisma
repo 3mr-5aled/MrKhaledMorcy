@@ -213,6 +213,7 @@ model LiveSession {
   slug            String              @default("SESSION")
   description     String?             @db.Text
   sessionLink     String
+  whatsappLink    String?             @db.Text
   sessionDateTime DateTime
   durationMinutes Int                 @default(120)
   gradeId         String

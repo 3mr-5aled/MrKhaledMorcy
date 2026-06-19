@@ -12,6 +12,10 @@ const sessionSchema = z.object({
   slug: z.string().min(1).max(20).optional(),
   description: z.string().optional().nullable(),
   sessionLink: z.string().url().optional(),
+  whatsappLink: z.preprocess(
+    (value) => (value === "" ? null : value),
+    z.string().url("رابط مجموعة الواتساب غير صالح").optional().nullable(),
+  ),
   sessionDateTime: z.string().datetime().optional(),
   durationMinutes: z.number().int().min(1).max(600).optional(),
   gradeId: z.string().min(1).optional(),

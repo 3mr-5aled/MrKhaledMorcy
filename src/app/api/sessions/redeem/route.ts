@@ -60,6 +60,7 @@ export async function POST(request: Request) {
         formattedSessionDateTime: formatEgyptDate(liveSession.sessionDateTime),
         status: status,
         sessionLink: includeLink ? liveSession.sessionLink : null,
+        whatsappLink: liveSession.whatsappLink,
       });
     }
 
@@ -122,6 +123,7 @@ export async function POST(request: Request) {
         liveSession.durationMinutes,
       ),
       sessionLink: includeLink ? liveSession.sessionLink : null,
+      whatsappLink: liveSession.whatsappLink,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
