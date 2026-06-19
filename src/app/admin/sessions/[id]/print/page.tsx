@@ -46,7 +46,7 @@ export default function PrintSessionCodesPage() {
           const url = `${origin}/sessions?code=${encodeURIComponent(item.code)}`;
           const qr = await QRCode.toDataURL(url, {
             margin: 1,
-            width: 150,
+            width: 200,
             errorCorrectionLevel: "H",
           });
           return [item.code, qr] as const;
@@ -221,7 +221,7 @@ export default function PrintSessionCodesPage() {
 
               {/* Left content area: QR Code & logo */}
               <div className="flex flex-col items-center justify-center gap-1 flex-shrink-0">
-                <div className="relative w-[75px] h-[75px] bg-white p-1 rounded-xl shadow-sm border border-gray-200 flex items-center justify-center">
+                <div className="relative w-[96px] h-[96px] bg-white p-1 rounded-xl shadow-sm border border-gray-200 flex items-center justify-center">
                   {qrCodes[item.code] && (
                     <img
                       src={qrCodes[item.code]}
@@ -230,7 +230,7 @@ export default function PrintSessionCodesPage() {
                     />
                   )}
                   {/* Central QR Code Logo Overlay */}
-                  <div className="absolute inset-0 m-auto w-[20px] h-[20px] bg-white rounded-full p-0.5 shadow-md flex items-center justify-center border border-gray-100">
+                  <div className="absolute inset-0 m-auto w-[24px] h-[24px] bg-white rounded-full p-0.5 shadow-md flex items-center justify-center border border-gray-100">
                     <img
                       src="/images/logo.png"
                       alt="Logo"
