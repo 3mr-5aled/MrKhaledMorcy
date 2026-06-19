@@ -220,17 +220,65 @@ function SessionsContent() {
             )}
 
             {session.sessionLink ? (
-              <a
-                href={session.sessionLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-gradient-to-r from-[#FFC43D] to-[#EF476F] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all"
-              >
-                رابط الحصة
-              </a>
+              <div className="mb-6 rounded-2xl border-2 border-[#1B9AAA]/30 bg-[#1B9AAA]/5 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-right">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1B9AAA] to-[#06D6A0] flex items-center justify-center text-white shrink-0 shadow-md">
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-base sm:text-lg">رابط الحصة المباشرة</h3>
+                    <p className="text-xs sm:text-sm text-gray-500 font-medium">الحصة بدأت الآن، اضغط على الزر للانضمام والتفاعل</p>
+                  </div>
+                </div>
+                <a
+                  href={session.sessionLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 bg-gradient-to-r from-[#1B9AAA] to-[#06D6A0] hover:shadow-lg text-white rounded-xl font-bold flex items-center gap-2 shadow-md transition-all whitespace-nowrap text-sm cursor-pointer"
+                >
+                  <span>دخول الحصة</span>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    />
+                  </svg>
+                </a>
+              </div>
             ) : (
-              <div className="rounded-xl border border-[#FFC43D]/30 bg-[#FFC43D]/10 p-4 text-gray-800 font-semibold">
-                رابط الحصة هيتفتح قبل معاد الحصة بـ 20 دقيقة.
+              <div className="mb-6 rounded-2xl border-2 border-[#FFC43D]/30 bg-[#FFC43D]/5 p-5 flex flex-col sm:flex-row items-center gap-4 text-right">
+                <div className="w-12 h-12 rounded-xl bg-[#FFC43D] flex items-center justify-center text-white shrink-0 shadow-md">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-base">رابط الحصة لم يفتح بعد</h3>
+                  <p className="text-xs sm:text-sm text-gray-500 font-medium">رابط الحصة هيتفتح تلقائياً قبل معاد الحصة بـ 20 دقيقة.</p>
+                </div>
               </div>
             )}
           </div>
