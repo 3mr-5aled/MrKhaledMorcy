@@ -60,6 +60,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/sessions"
+                  className="text-gray-400 hover:text-[#06D6A0] transition-colors"
+                >
+                  الحصص المباشرة
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/quizzes"
                   className="text-gray-400 hover:text-[#06D6A0] transition-colors"
                 >

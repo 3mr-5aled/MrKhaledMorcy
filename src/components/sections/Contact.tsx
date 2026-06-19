@@ -182,7 +182,7 @@ export default function Contact() {
                   </svg>
                   <div>
                     <p className="font-semibold text-lg">
-                      من 10 مساءً إلى 12 ظهراً
+                      من 10 مساءً إلى 12 منتصف الليل
                     </p>
                     <p className="text-white/80 text-sm">يومياً طوال الأسبوع</p>
                   </div>
@@ -221,5 +221,5 @@ export default function Contact() {
         </div>
       </div>
     </section>
-  );
+  )
 }
