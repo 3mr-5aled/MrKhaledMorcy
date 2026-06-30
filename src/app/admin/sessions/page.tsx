@@ -121,6 +121,7 @@ export default function AdminSessionsPage() {
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isExportingAttendance, setIsExportingAttendance] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -181,7 +182,7 @@ export default function AdminSessionsPage() {
     setEditingSession(session);
     setFormData({
       title: session.title,
-      slug: session.slug || "",
+      slug: session.slug === "SESSION" ? "" : (session.slug || ""),
       description: session.description || "",
       sessionLink: session.sessionLink || "",
       whatsappLink: session.whatsappLink || "",
@@ -197,11 +198,6 @@ export default function AdminSessionsPage() {
 
     if (!formData.title.trim()) {
       showToast.error("عنوان الحصة مطلوب");
-      return;
-    }
-
-    if (!formData.slug.trim()) {
-      showToast.error("رمز الحصة (Slug) مطلوب");
       return;
     }
 
@@ -428,6 +424,42 @@ export default function AdminSessionsPage() {
       showToast.error(getErrorMessage(error, "حدث خطأ أثناء التصدير"));
     } finally {
       setIsExportingExcel(false);
+    }
+  };
+
+  const exportAttendanceSheet = async () => {
+    if (!selectedSession) return;
+
+    setIsExportingAttendance(true);
+    try {
+      const response = await fetch(`/api/sessions/${selectedSession.id}/export`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "حدث خطأ أثناء التصدير");
+      }
+
+      const sheetRows = data.codes.map((item: ExportCodeRow, index: number) => ({
+        "Serial Number": index + 1,
+        "Name": "",
+        "Session Code": item.code,
+      }));
+
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(sheetRows);
+      
+      worksheet["!cols"] = [
+        { wch: 15 },
+        { wch: 35 },
+        { wch: 25 }
+      ];
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance Sheet");
+      XLSX.writeFile(workbook, `${selectedSession.title}-attendance-sheet.xlsx`);
+    } catch (error) {
+      showToast.error(getErrorMessage(error, "حدث خطأ أثناء التصدير"));
+    } finally {
+      setIsExportingAttendance(false);
     }
   };
 
@@ -694,30 +726,38 @@ export default function AdminSessionsPage() {
                     {isGenerating ? "جاري..." : "Generate"}
                   </button>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={printCards}
-                    disabled={isPrinting || isExportingExcel || isExportingPdf}
+                    disabled={isPrinting || isExportingExcel || isExportingPdf || isExportingAttendance}
                     className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                   >
                     {isPrinting ? "جاري..." : "Print Cards"}
                   </button>
                   <button
                     type="button"
+                    onClick={exportPdf}
+                    disabled={isPrinting || isExportingExcel || isExportingPdf || isExportingAttendance}
+                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                  >
+                    {isExportingPdf ? "جاري..." : "Export PDF"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={exportExcel}
-                    disabled={isPrinting || isExportingExcel || isExportingPdf}
+                    disabled={isPrinting || isExportingExcel || isExportingPdf || isExportingAttendance}
                     className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                   >
                     {isExportingExcel ? "جاري..." : "Export Excel"}
                   </button>
                   <button
                     type="button"
-                    onClick={exportPdf}
-                    disabled={isPrinting || isExportingExcel || isExportingPdf}
-                    className="px-3 py-2 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                    onClick={exportAttendanceSheet}
+                    disabled={isPrinting || isExportingExcel || isExportingPdf || isExportingAttendance}
+                    className="px-3 py-2 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 font-bold hover:from-emerald-100/50 hover:to-teal-100/50 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                   >
-                    {isExportingPdf ? "جاري..." : "Export PDF"}
+                    {isExportingAttendance ? "جاري..." : "Export Attendance Sheet"}
                   </button>
                 </div>
               </div>
@@ -803,6 +843,7 @@ export default function AdminSessionsPage() {
                 ) : (
                   filteredCodes.map((code) => {
                     const isSelected = selectedCodes.includes(code.id);
+                    const serialNumber = codes.findIndex((c) => c.id === code.id);
                     return (
                       <div
                         key={code.id}
@@ -817,6 +858,9 @@ export default function AdminSessionsPage() {
                             onChange={() => toggleSelectCode(code.id)}
                             className="w-4 h-4 rounded border-gray-300 text-[#1B9AAA] focus:ring-[#1B9AAA] cursor-pointer"
                           />
+                          <span className="text-[10px] font-bold text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
+                            S/N: {serialNumber + 1}
+                          </span>
                           <span className="font-mono text-sm" dir="ltr">
                             {code.code}
                           </span>
@@ -874,7 +918,7 @@ export default function AdminSessionsPage() {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  رمز الحصة (Slug Prefix) *
+                  رمز الحصة (Slug Prefix)
                 </label>
                 <input
                   type="text"

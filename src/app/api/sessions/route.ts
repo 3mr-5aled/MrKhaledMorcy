@@ -9,7 +9,7 @@ import { z } from "zod";
 
 const sessionSchema = z.object({
   title: z.string().min(1, "عنوان الحصة مطلوب"),
-  slug: z.string().min(1, "رمز الحصة (Slug) مطلوب").max(20, "الرمز طويل جداً"),
+  slug: z.string().max(20, "الرمز طويل جداً").optional().default(""),
   description: z.string().optional().nullable(),
   sessionLink: z.string().url("رابط الحصة غير صالح"),
   whatsappLink: z.preprocess(

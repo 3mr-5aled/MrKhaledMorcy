@@ -24,7 +24,7 @@ async function getSessionCodesPayload(sessionId: string) {
     }),
     db.sessionCode.findMany({
       where: { sessionId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
       include: {
         attendance: true,
         grade: true,

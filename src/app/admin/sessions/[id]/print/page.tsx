@@ -169,7 +169,7 @@ export default function PrintSessionCodesPage() {
       {/* Printable Sheet */}
       <main className="print-sheet max-w-5xl mx-auto bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm print:border-none print:p-0">
         <div className="print-grid grid grid-cols-1 sm:grid-cols-2 gap-4 print:grid-cols-2 print:gap-[10mm] print:justify-center">
-          {payload.codes.map((item) => (
+          {payload.codes.map((item, index) => (
             <article
               key={item.id}
               className="code-card relative flex flex-row items-stretch justify-between p-4 bg-gradient-to-br from-white via-white to-gray-50/30 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden text-right select-none"
@@ -241,6 +241,11 @@ export default function PrintSessionCodesPage() {
                 <span className="text-[7.5px] text-[#64748b] font-extrabold text-center font-cairo">
                   امسح الكود للتسجيل السريع
                 </span>
+              </div>
+
+              {/* Serial Number at Bottom-Left */}
+              <div className="absolute bottom-3 left-3 text-xs font-black text-slate-800 bg-slate-100 border border-slate-300 rounded px-1.5 py-0.5 font-mono shadow-sm" dir="ltr">
+                S/N: {index + 1}
               </div>
             </article>
           ))}

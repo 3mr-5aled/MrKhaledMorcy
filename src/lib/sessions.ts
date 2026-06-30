@@ -81,12 +81,16 @@ export function generateCodeValue(
     randomPart += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
   }
 
-  const prefix =
-    sessionSlug && sessionSlug !== "SESSION"
+  const cleanSlug =
+    sessionSlug && sessionSlug.trim() !== "" && sessionSlug !== "SESSION"
       ? sessionSlug.toUpperCase().replace(/[^A-Z0-9]+/g, "").slice(0, 10)
-      : getGradeCode(gradeSlug);
+      : "";
 
-  return `${prefix}#${getSessionNumber(sessionId)}#${randomPart}`;
+  if (cleanSlug) {
+    return `${cleanSlug}#${getSessionNumber(sessionId)}#${randomPart}`;
+  }
+
+  return `${getSessionNumber(sessionId)}#${randomPart}`;
 }
 
 export function mapSessionForResponse<T extends {

@@ -9,7 +9,7 @@ import { z } from "zod";
 
 const sessionSchema = z.object({
   title: z.string().min(1).optional(),
-  slug: z.string().min(1).max(20).optional(),
+  slug: z.string().max(20).optional(),
   description: z.string().optional().nullable(),
   sessionLink: z.string().url().optional(),
   whatsappLink: z.preprocess(
